@@ -10,4 +10,7 @@ remove:
 	-command rm ../scripts
 	command mv ../scripts_original ../scripts
 
-.PHONY: install remove
+test:
+	cd scripts; lua test_*.lua
+
+.PHONY: install remove test
