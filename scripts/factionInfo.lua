@@ -10,7 +10,7 @@ They'd never really worked together except to do one thing - deliver the mail.
 Out on the frontier, folk liked to keep to themselves, dealing with their own trouble in their own way.
 On the Border planets, it could be dangerous to stick a gun barrel in someone's face because often as not 3 more could be pointing back at you.]])
 
-kraylor = FactionInfo():setName("Allience Navy")
+kraylor = FactionInfo():setName("Alliance Navy")
 kraylor:setGMColor(0, 128, 255)
 kraylor:setEnemy(human)
 kraylor:setDescription([[The strength of the Alliance military ensures that the Alliance remains in control.
@@ -19,7 +19,7 @@ Though currently stretched quite thin, the military is still impressive.
 Massive cruisers - the size of small cities - patrol space, keeping a watch for smugglers, illegal salvage operations, and pirates.
 No one in the system is willing to take on an Alliance cruiser, which has enough firepower to atomize most other spacecraft.]])
 
-Hive = FactionInfo():setName("Reevers")
+Hive = FactionInfo():setName("Reavers")
 Hive:setGMColor(255, 0, 0)
 Hive:setDescription([[To the people of the Core Worlds, Reavers are a campfire tale and bedtime story; to the people of the Border Worlds and Colonies, Reavers are very real.
 Reavers are believed by most of the 'verse to be men that went insane at the edge of space and became savage.
