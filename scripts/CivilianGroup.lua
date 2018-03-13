@@ -15,6 +15,9 @@ end
 
 function CivilianGroup:getGeographicCentre()
   local numberOfCivilians = table.getn(self.civilians)
+  if numberOfCivilians == 0 then
+    return 0, 0
+  end
   local xTotal = 0;
   local yTotal = 0;
   for _, civilian in ipairs(self.civilians) do
