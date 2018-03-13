@@ -1,10 +1,11 @@
 -- Name: Leaf on the wind
 -- Description: Scenario Description
 -- Type: Basic
--- Variation[OnePlayer]: One player scenario
 -- Variation[TwoPlayer]: Two player scenario
 
 function init()
+    if getScenarioVariation() == "TwoPlayer" then
+    end
 end
 
 function update(delta)
