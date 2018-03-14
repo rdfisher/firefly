@@ -14,7 +14,7 @@ function CivilianGroup:add(civilian)
 end
 
 function CivilianGroup:getGeographicCentre()
-  local numberOfCivilians = table.getn(self.civilians)
+  local numberOfCivilians = #self.civilians
   if numberOfCivilians == 0 then
     return 0, 0
   end
@@ -40,5 +40,5 @@ function CivilianGroup:cleanup()
 end
 
 function CivilianGroup:getSize()
-  return table.getn(self.civilians)
+  return #self.civilians
 end
