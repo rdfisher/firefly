@@ -2,7 +2,9 @@ TransportMission = {
     ship = {},
     targets = {},
     current_target = nil,
-    ordered = false
+    ordered = false,
+    docking = false,
+    docking_time = 0
 }
 
 function TransportMission:new()
@@ -67,20 +69,34 @@ function TransportMission:isComplete()
 end
 
 function TransportMission:update(delta)
+    -- Start with being given an order to fly
     if not self.ordered then
         local x, y = self.current_target:getPosition()
         self.ship:orderFlyTowardsBlind(x, y)
         self.ordered = true
     end
 
-    if self:isComplete() then
-        -- Pick new target that isn't the same as the current one
-        local target = nil
-        repeat
-            target = self.targets[math.random(#self.targets)]
-        until(target ~= self.current_target or #targets == 1)
-        self.current_target = target
-        self.ordered = false
+    -- If we are close to our objective, request dock
+    local d = distance(self.ship, self.current_target)
+    if d < 3000 and not self.docking then
+        self.docking = true
+        self.ship:orderDock(self.current_target)
+        self.docking_time = 0
     end
-    -- TODO: State machine to manage docking.
+
+    -- If we have docked, wait a little bit, and undock
+    if self.docking and self.ship:isDocked(self.current_target) then
+        self.docking_time = self.docking_time + delta
+        -- Undock after 10 seconds
+        if self.docking_time > 10.0 then
+            self.docking = false
+            -- Pick new target that isn't the same as the current one
+            local target = nil
+            repeat
+                target = self.targets[math.random(#self.targets)]
+            until(target ~= self.current_target or #self.targets == 1)
+            self.current_target = target
+            self.ordered = false
+        end
+    end
 end
