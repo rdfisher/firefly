@@ -17,26 +17,27 @@
 require("CivilianGroup.lua")
 require("EscortObjective.lua")
 groups = {}
+stations = {}
 escortObjectives = {}
 function init()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis")
     
     -- Spawn some stations
-    SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(20000, 20000):setCallSign("DS1")
-    SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-20000, 20000):setCallSign("DS2")
-    SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-20000, -20000):setCallSign("DS3")
-    SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(20000, -20000):setCallSign("DS4")
+    stations[1] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(20000, 20000):setCallSign("DS1")
+    stations[2] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-20000, 20000):setCallSign("DS2")
+    stations[3] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-20000, -20000):setCallSign("DS3")
+    stations[4] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(20000, -20000):setCallSign("DS4")
 
     for i=1,4 do
+        local group = CivilianGroup:new()
         for c=1,10 do
             ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-10000, 10000), random(-10000, 10000)):orderIdle()
-            group = CivilianGroup:new()
             group:add(ship)
         end
         local x, y = group:getGeographicCentre()
-        escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
+        escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderDock(stations[i])
         
-        objective = EscortObjective:new()
+        local objective = EscortObjective:new()
         objective:assignShip(escort)
         objective:assignTarget(group)
         table.insert(escortObjectives, objective)
