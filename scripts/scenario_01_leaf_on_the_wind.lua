@@ -16,11 +16,11 @@
 -- Implement Cry Baby
 require("CivilianGroup.lua")
 require("EscortObjective.lua")
-require("TransportMission.lua")
+require("TransportCaptain.lua")
 groups = {}
 stations = {}
 escortObjectives = {}
-transportMissions = {}
+transportCaptains = {}
 function init()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis")
     
@@ -35,10 +35,10 @@ function init()
         for c=1,10 do
             local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-10000, 10000), random(-10000, 10000)):orderIdle()
             group:add(ship)
-            local mission = TransportMission:new()
+            local mission = TransportCaptain:new()
             mission:assignShip(ship)
             mission:assignTargets(stations)
-            table.insert(transportMissions, mission)
+            table.insert(transportCaptains, mission)
         end
         local x, y = group:getPosition()
         escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderDock(stations[i])
@@ -67,8 +67,8 @@ function update(delta)
     for _, objective in ipairs(escortObjectives) do
         objective:update(delta)
     end
-    for _, mission in ipairs(transportMissions) do
-        mission:update(delta)
+    for _, captain in ipairs(transportCaptains) do
+        captain:update(delta)
     end
 end
 

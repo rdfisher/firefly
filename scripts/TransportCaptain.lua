@@ -1,13 +1,14 @@
-TransportMission = {
+TransportCaptain = {
     ship = {},
     targets = {},
     current_target = nil,
     ordered = false,
     docking = false,
-    docking_time = 0
+    docking_time = 0,
+    dock_count = 0
 }
 
-function TransportMission:new()
+function TransportCaptain:new()
     local o = {
         ship = {},
         targets = {},
@@ -19,11 +20,11 @@ function TransportMission:new()
     return o
 end
 
-function TransportMission:assignShip(ship)
+function TransportCaptain:assignShip(ship)
     self.ship = ship
 end
 
-function TransportMission:assignTargets(targets)
+function TransportCaptain:assignTargets(targets)
     self.targets = targets
     self.current_target = self.targets[math.random(#self.targets)]
 end
@@ -58,7 +59,7 @@ function distance(a, b, c, d)
     return math.sqrt(xd * xd + yd * yd)
 end
 
-function TransportMission:update(delta)
+function TransportCaptain:update(delta)
     -- Start with being given an order to fly
     if not self.ordered then
         local x, y = self.current_target:getPosition()
@@ -79,6 +80,7 @@ function TransportMission:update(delta)
         self.docking_time = self.docking_time + delta
         -- Undock after 10 seconds
         if self.docking_time > 10.0 then
+            self.dock_count = self.dock_count + 1
             self.docking = false
             -- Pick new target that isn't the same as the current one
             local target = nil
@@ -89,4 +91,8 @@ function TransportMission:update(delta)
             self.ordered = false
         end
     end
+end
+
+function TransportCaptain:getDockCount()
+    return self.dock_count
 end
