@@ -16,9 +16,11 @@
 -- Implement Cry Baby
 require("CivilianGroup.lua")
 require("EscortObjective.lua")
+require("TransportMission.lua")
 groups = {}
 stations = {}
 escortObjectives = {}
+transportMissions = {}
 function init()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis")
     
@@ -31,10 +33,14 @@ function init()
     for i=1,4 do
         local group = CivilianGroup:new()
         for c=1,10 do
-            ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-10000, 10000), random(-10000, 10000)):orderIdle()
+            local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-10000, 10000), random(-10000, 10000)):orderIdle()
             group:add(ship)
+            local mission = TransportMission:new()
+            mission:assignShip(ship)
+            mission:assignTarget(stations[2])
+            table.insert(transportMissions, mission)
         end
-        local x, y = group:getGeographicCentre()
+        local x, y = group:getPosition()
         escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderDock(stations[i])
         
         local objective = EscortObjective:new()
@@ -47,7 +53,7 @@ function init()
 
     -- Temporary function to test finding probes
     addGMFunction("Find Probes", function()
-        probes = findProbes()
+        local probes = findProbes()
         for _,v in ipairs(probes) do
             if v:isValid() then
                 local x, y = v:getPosition()
@@ -60,6 +66,9 @@ end
 function update(delta)
     for _, objective in ipairs(escortObjectives) do
         objective:update(delta)
+    end
+    for _, mission in ipairs(transportMissions) do
+        mission:update(delta)
     end
 end
 
