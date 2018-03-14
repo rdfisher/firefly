@@ -37,7 +37,7 @@ function init()
             group:add(ship)
             local mission = TransportMission:new()
             mission:assignShip(ship)
-            mission:assignTarget(stations[math.random(#stations)])
+            mission:assignTargets(stations)
             table.insert(transportMissions, mission)
         end
         local x, y = group:getPosition()
