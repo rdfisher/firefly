@@ -58,16 +58,6 @@ function distance(a, b, c, d)
     return math.sqrt(xd * xd + yd * yd)
 end
 
-function TransportMission:isComplete()
-    -- TODO: Implement an Epsilon comparison `abs(a - b) < EPSILON`
-    local d = distance(self.ship, self.current_target)
-    print(string.format("Distance between ship and target is %f", d))
-    if d < 1000 then
-        return true
-    end
-    return false
-end
-
 function TransportMission:update(delta)
     -- Start with being given an order to fly
     if not self.ordered then
