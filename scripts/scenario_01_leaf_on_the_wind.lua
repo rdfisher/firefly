@@ -15,7 +15,9 @@
 -- Create a search pattern script
 -- Implement Cry Baby
 require("CivilianGroup.lua")
+require("EscortObjective.lua")
 groups = {}
+escortObjectives = {}
 function init()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis")
     
@@ -27,12 +29,18 @@ function init()
 
     for i=1,4 do
         for c=1,10 do
-            ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-10000, 10000), random(-10000, 10000)):orderRoaming()
+            ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-10000, 10000), random(-10000, 10000)):orderIdle()
             group = CivilianGroup:new()
             group:add(ship)
         end
         local x, y = group:getGeographicCentre()
-        escort = CpuShip():setTemplate("Starhammer II"):setFaction("Allience Navy"):setPosition(x,y):orderRoaming()
+        escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
+        
+        objective = EscortObjective:new()
+        objective:assignShip(escort)
+        objective:assignTarget(group)
+        table.insert(escortObjectives, objective)
+
         table.insert(groups, {group=group, escort=escort})
     end
 
@@ -49,10 +57,8 @@ function init()
 end
 
 function update(delta)
-    -- todo: make escort follow the center
-    for _, group in ipairs(groups) do
-        local x, y = group.group:getGeographicCentre()
-        group.escort:orderFlyTowards(x, y)
+    for _, objective in ipairs(escortObjectives) do
+        objective:update(delta)
     end
 end
 
