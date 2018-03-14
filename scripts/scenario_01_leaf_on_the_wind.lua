@@ -14,6 +14,8 @@
 -- Create a "follow investigate last position" script
 -- Create a search pattern script
 -- Implement Cry Baby
+
+require("Verse.lua")
 require("CivilianGroup.lua")
 require("EscortObjective.lua")
 require("TransportCaptain.lua")
@@ -21,19 +23,27 @@ groups = {}
 stations = {}
 escortObjectives = {}
 transportCaptains = {}
+transportMissions = {}
+
+-- the whole gorram 'verse
+verse = Verse:new()
+
 function init()
-    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis")
+    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(2000000, 2000000)
+    
+    
+    verse:generate(5000)
     
     -- Spawn some stations
-    stations[1] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(20000, 20000):setCallSign("DS1")
-    stations[2] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-20000, 20000):setCallSign("DS2")
-    stations[3] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-20000, -20000):setCallSign("DS3")
-    stations[4] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(20000, -20000):setCallSign("DS4")
+    stations[1] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(200000, 200000):setCallSign("DS1")
+    stations[2] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-200000, 200000):setCallSign("DS2")
+    stations[3] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-200000, -200000):setCallSign("DS3")
+    stations[4] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(200000, -200000):setCallSign("DS4")
 
     for i=1,4 do
         local group = CivilianGroup:new()
         for c=1,10 do
-            local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-10000, 10000), random(-10000, 10000)):orderIdle()
+            local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-100000, 100000), random(-100000, 100000)):orderDock(stations[i])
             group:add(ship)
             local captain = TransportCaptain:new()
             captain:assignShip(ship)
@@ -41,7 +51,7 @@ function init()
             table.insert(transportCaptains, captain)
         end
         local x, y = group:getPosition()
-        escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderDock(stations[i])
+        escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
         
         local objective = EscortObjective:new()
         objective:assignShip(escort)
