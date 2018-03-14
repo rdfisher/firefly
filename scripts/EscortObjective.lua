@@ -19,6 +19,6 @@ function EscortObjective:assignTarget(target)
 end
 
 function EscortObjective:update(delta)
-  local x, y = group:getGeographicCentre()
+  local x, y = group:getPosition()
   self.ship:orderFlyTowards(x, y)
 end

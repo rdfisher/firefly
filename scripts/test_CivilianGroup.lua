@@ -26,7 +26,7 @@ end
 
 group1 = CivilianGroup:new()
 
-local x, y = group1:getGeographicCentre()
+local x, y = group1:getPosition()
 lu.assertEquals(x, 0)
 lu.assertEquals(y, 0)
 
@@ -38,12 +38,12 @@ group1:add(ship2)
 
 lu.assertEquals(group1:getSize(), 2)
 
-x, y = group1:getGeographicCentre()
+x, y = group1:getPosition()
 lu.assertEquals(x, 0)
 lu.assertEquals(y, 250)
 
 group1:cleanup()
 lu.assertEquals(group1:getSize(), 1)
-x, y = group1:getGeographicCentre()
+x, y = group1:getPosition()
 lu.assertEquals(x, 100)
 lu.assertEquals(y, 200)

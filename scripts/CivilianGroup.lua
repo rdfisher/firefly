@@ -13,7 +13,7 @@ function CivilianGroup:add(civilian)
   table.insert(self.civilians, civilian)
 end
 
-function CivilianGroup:getGeographicCentre()
+function CivilianGroup:getPosition()
   local numberOfCivilians = #self.civilians
   if numberOfCivilians == 0 then
     return 0, 0
