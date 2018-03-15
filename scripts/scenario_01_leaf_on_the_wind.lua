@@ -32,7 +32,7 @@ cortex = Cortex:new()
 dispatcher = AllianceNavyDispatcher:new(cortex)
 
 function init()
-    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(2000000, 2000000)
+    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(0, 0)
     
     
     verse:generate(5000)
