@@ -89,8 +89,11 @@ function TransportCaptain:getAttackedCounter()
     return self.attacked_counter
 end
 
---self.ship:areEnemiesInRange(1000) -- Is there an enemy in range of 1U
 function TransportCaptain:isUnderAttack(delta)
+    -- Enemy on the scanner
+    if not self.under_attack and self.ship:areEnemiesInRange(30000) then
+        self.under_attack = true
+    end
     -- If integrity fell below previous value
     local currentIntegrity = self:getIntegrity()
     if currentIntegrity < self.integrity then
