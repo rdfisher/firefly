@@ -5,7 +5,11 @@ TransportCaptain = {
     ordered = false,
     docking = false,
     docking_time = 0,
-    dock_count = 0
+    dock_count = 0,
+    integrity = 1,
+    under_attack_timer = 0,
+    under_attack = false,
+    attacked_counter = 0
 }
 
 function TransportCaptain:new()
@@ -13,7 +17,10 @@ function TransportCaptain:new()
         ship = {},
         targets = {},
         current_target = nil,
-        ordered = false
+        ordered = false,
+        docking = false,
+        docking_time = 0,
+        dock_count = 0
     }
     setmetatable(o, self)
     self.__index = self
@@ -59,12 +66,74 @@ function distance(a, b, c, d)
     return math.sqrt(xd * xd + yd * yd)
 end
 
+function TransportCaptain:getIntegrity()
+    local level = 0.0;
+    local hull = self.ship:getHull() / self.ship:getHullMax()
+
+    local shield = 0.0;
+    for s=0,self.ship:getShieldCount()-1 do
+        shield = shield + (self.ship:getShieldLevel(s) / self.ship:getShieldMax(s))
+    end
+    shield = shield / self.ship:getShieldCount()
+
+    local integrity = (hull + shield / 2.0)
+    return integrity
+end
+
+function TransportCaptain:getAttackedCounter()
+    return self.attacked_counter
+end
+
+--self.ship:areEnemiesInRange(1000) -- Is there an enemy in range of 1U
+function TransportCaptain:isUnderAttack(delta)
+    -- If integrity fell below previous value
+    local currentIntegrity = self:getIntegrity()
+    if currentIntegrity < self.integrity then
+        -- Reset attack timeout timer
+        self.under_attack_timer = 0
+        if not self.under_attack then
+            self.under_attack = true
+            self.attacked_counter = self.attacked_counter + 1
+        end
+    end
+    self.integrity = currentIntegrity
+
+    if self.under_attack then
+        if self.under_attack_timer < 10 then
+            self.under_attack_timer = self.under_attack_timer + delta
+        else
+            self.under_attack = false
+            
+        end
+    end
+
+    return self.under_attack
+end
+
 function TransportCaptain:update(delta)
+    -- TODO: Signal cortex if under attack
+    local ohno = self:isUnderAttack(delta)
+    if ohno then
+        -- Prints continuously while under attack
+        -- print(string.format("Ship %s is under attack! Integrity %f", self.ship:getCallSign(), self.integrity))
+    end
+    -- TODO: Stop if attacked and damaged
+    if self.ordered and self.integrity <= 0.5 then
+        self.ship:orderIdle()
+        self.ordered = false
+    end
+    -- TODO: Signal attacker for some role play
     -- Start with being given an order to fly
-    if not self.ordered then
+    if not self.ordered and self.integrity > 0.5 then
         local x, y = self.current_target:getPosition()
         self.ship:orderFlyTowardsBlind(x, y)
         self.ordered = true
+        print(string.format("Ship %s ordered to sector %s", self.ship:getCallSign(), self.current_target:getSectorName()))
+    end
+
+    -- Short circuit. We are not moving
+    if not self.ordered then
+        return
     end
 
     -- If we are close to our objective, request dock
