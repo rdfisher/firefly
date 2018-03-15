@@ -19,6 +19,8 @@ require("Verse.lua")
 require("CivilianGroup.lua")
 require("EscortObjective.lua")
 require("TransportCaptain.lua")
+require("Cortex.lua")
+
 groups = {}
 stations = {}
 escortObjectives = {}
@@ -27,6 +29,7 @@ transportMissions = {}
 
 -- the whole gorram 'verse
 verse = Verse:new()
+cortex = Cortex:new()
 
 function init()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(2000000, 2000000)
@@ -48,6 +51,7 @@ function init()
             local captain = TransportCaptain:new()
             captain:assignShip(ship)
             captain:assignTargets(stations)
+            captain:setCortex(cortex)
             table.insert(transportCaptains, captain)
         end
         local x, y = group:getPosition()

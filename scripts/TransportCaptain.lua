@@ -1,5 +1,6 @@
 TransportCaptain = {
     ship = {},
+    cortex = {},
     targets = {},
     current_target = nil,
     ordered = false,
@@ -15,6 +16,7 @@ TransportCaptain = {
 function TransportCaptain:new()
     local o = {
         ship = {},
+        cortex = {},
         targets = {},
         current_target = nil,
         ordered = false,
@@ -34,6 +36,10 @@ end
 function TransportCaptain:assignTargets(targets)
     self.targets = targets
     self.current_target = self.targets[math.random(#self.targets)]
+end
+
+function TransportCaptain:setCortex(cortex)
+    self.cortex = cortex
 end
 
 function distance(a, b, c, d)
@@ -114,10 +120,10 @@ function TransportCaptain:update(delta)
         return
     end
     -- TODO: Signal cortex if under attack
+    local previous_attack_status = self.under_attack
     local ohno = self:isUnderAttack(delta)
-    if ohno then
-        -- Prints continuously while under attack
-        -- print(string.format("Ship %s is under attack! Integrity %f", self.ship:getCallSign(), self.integrity))
+    if not previous_attack_status and ohno then
+        self.cortex:reportAttack(self.ship, self.ship:getSectorName(), self.ship:getPosition())
     end
     -- TODO: Stop if attacked and damaged
     if self.ordered and self.integrity <= 0.5 then
