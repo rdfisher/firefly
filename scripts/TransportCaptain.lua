@@ -115,6 +115,10 @@ function TransportCaptain:isUnderAttack(delta)
     return self.under_attack
 end
 
+function TransportCaptain:isValid()
+    return self.ship:isValid()
+end
+
 function TransportCaptain:update(delta)
     if not self.ship:isValid() then
         return
@@ -144,6 +148,13 @@ function TransportCaptain:update(delta)
         return
     end
 
+    -- If our target is now invalid, just pick a new one
+    if not self.current_target:isValid() then
+        self.ordered = false
+        self:pickNewTarget()
+        return
+    end
+
     -- If we are close to our objective, request dock
     local d = distance(self.ship, self.current_target)
     if d < 3000 and not self.docking then
@@ -159,15 +170,19 @@ function TransportCaptain:update(delta)
         if self.docking_time > 10.0 then
             self.dock_count = self.dock_count + 1
             self.docking = false
-            -- Pick new target that isn't the same as the current one
-            local target = nil
-            repeat
-                target = self.targets[math.random(#self.targets)]
-            until(target ~= self.current_target or #self.targets == 1)
-            self.current_target = target
+            self:pickNewTarget()
             self.ordered = false
         end
     end
+end
+
+-- Pick new target that isn't the same as the current one
+function TransportCaptain:pickNewTarget()
+    local target = nil
+    repeat
+        target = self.targets[math.random(#self.targets)]
+    until(target ~= self.current_target or #self.targets == 1)
+    self.current_target = target
 end
 
 function TransportCaptain:getDockCount()
