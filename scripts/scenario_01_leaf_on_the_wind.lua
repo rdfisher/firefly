@@ -35,22 +35,23 @@ dispatcher = AllianceNavyDispatcher:new(cortex)
 function init()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(0, 0)
     
+    local scale = 5000
     
-    verse:generate(500) -- scale temporarily
+    verse:generate(scale)
     
     local swarmX, swarmY = verse.byName["burnham"]:getPosition()
     
     
     -- Spawn some stations
-    stations[1] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(200000, 200000):setCallSign("DS1")
-    stations[2] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-200000, 200000):setCallSign("DS2")
-    stations[3] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-200000, -200000):setCallSign("DS3")
-    stations[4] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(200000, -200000):setCallSign("DS4")
+    stations[1] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(6 * scale, 5 * scale):setCallSign("DS1")
+    stations[2] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-6 * scale, 5 * scale):setCallSign("DS2")
+    stations[3] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-6 * scale, -5 * scale):setCallSign("DS3")
+    stations[4] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(6 * scale, -5 * scale):setCallSign("DS4")
 
     for i=1,4 do
         local group = CivilianGroup:new()
         for c=1,10 do
-            local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-100000, 100000), random(-100000, 100000)):orderDock(stations[i])
+            local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-6 * scale, 6 * scale), random(-5 * scale, 5 * scale)):orderDock(stations[i])
             group:add(ship)
             local captain = TransportCaptain:new()
             captain:assignShip(ship)
