@@ -22,6 +22,7 @@ require("AllianceNavyDispatcher.lua")
 require("TransportCaptain.lua")
 require("Cortex.lua")
 require("ReaverSwarm.lua")
+require("Wave.lua")
 
 stations = {}
 navyCaptains = {}
@@ -29,13 +30,19 @@ transportCaptains = {}
 
 -- the whole gorram 'verse
 verse = Verse:new()
-cortex = Cortex:new()
-dispatcher = AllianceNavyDispatcher:new(cortex)
 
 function init()
-    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(0, 0)
-    
     local scale = 5000
+  
+    -- huge distance away:  players should never find it
+    local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(200 * scale, 100 * scale):setCallSign("APB")
+    wave = Wave:new(apb)
+    
+    cortex = Cortex:new(wave)
+    dispatcher = AllianceNavyDispatcher:new(cortex)
+    
+    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(2 * scale, 5 * scale)
+    wave:registerListener(browncoat)
     
     verse:generate(scale)
     

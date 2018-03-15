@@ -1,15 +1,18 @@
 Cortex = {
-    entries = {}
+    entries = {},
+    wave = {}
 }
 
-function Cortex:new()
+function Cortex:new(wave)
     local o = {}
+    o.wave = wave
     setmetatable(o, self)
     self.__index = self
     return o
 end
 
 function Cortex:reportAttack(ship, sector, x, y)
+    self:broadcastAlert(string.format("Ship %s is under attack! Sector %s", ship:getCallSign(), sector))
     table.insert(self.entries, CortexEntry:new(ship, sector, x, y))
 end
 
@@ -20,6 +23,9 @@ function Cortex:popLatestBulletin()
     return false
 end
 
+function Cortex:broadcastAlert(message)
+  self.wave:message(message)
+end
 
 CortexEntry = {
     ship = nil,

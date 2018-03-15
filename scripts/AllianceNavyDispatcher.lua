@@ -7,9 +7,8 @@ AllianceNavyDispatcher = {
 
 -- Its job is to follow up on the codex, and dispatch available ships to investigate
 function AllianceNavyDispatcher:new(cortex)
-    local o = {
-        cortex = cortex
-    }
+    local o = {}
+    o.cortex = cortex
     setmetatable(o, self)
     self.__index = self
     return o

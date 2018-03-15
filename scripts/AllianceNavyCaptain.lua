@@ -93,6 +93,10 @@ function AllianceNavyCaptain:update(delta)
                 "Order received by ship %s, proceeding to sector %s, x:%f, y:%f",
                 self.ship:getCallSign(), self.current_bulletin.sector, self.current_bulletin.x, self.current_bulletin.y
             ))
+            self.cortex:broadcastAlert(string.format(
+                "Ship %s dispatched to investigate hostile activity in sector %s",
+                self.ship:getCallSign(), self.current_bulletin.sector
+            ))
             self.ship:orderFlyTowards(self.current_bulletin.x, self.current_bulletin.y)
         else
             -- Proceed with default mission
