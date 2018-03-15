@@ -42,7 +42,7 @@ function TransportCaptain:setCortex(cortex)
     self.cortex = cortex
 end
 
-function distance(a, b, c, d)
+function TransportCaptain:distance(a, b, c, d)
     local x1, y1 = 0, 0
     local x2, y2 = 0, 0
     if type(a) == "table" and type(b) == "table" then
@@ -157,7 +157,7 @@ function TransportCaptain:update(delta)
     end
 
     -- If we are close to our objective, request dock
-    local d = distance(self.ship, self.current_target)
+    local d = self:distance(self.ship, self.current_target)
     if d < 3000 and not self.docking then
         self.docking = true
         self.ship:orderDock(self.current_target)

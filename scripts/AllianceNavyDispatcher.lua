@@ -1,3 +1,5 @@
+require("utils.lua")
+
 AllianceNavyDispatcher = {
     cortex = nil,
     navyShips = {}
@@ -26,13 +28,33 @@ function AllianceNavyDispatcher:update(delta)
 
     print(string.format("Ship %s is under attack! Sector %s", bulletin.ship:getCallSign(), bulletin.sector))
     -- Find the closest ship
-    local ship = self:findClosestShip()
+    local ship = self:findClosestShip(bulletin.x, bulletin.y)
     -- Give it a mission to investigate
     ship:investigate(bulletin)
 end
 
-function AllianceNavyDispatcher:findClosestShip()
-    -- TODO: find closest ship algo
-    return self.navyShips[math.random(#self.navyShips)]
+-- Room for improvement:
+-- effectiveLocation: hasTarget ? target : location
+-- effectiveDistance: distance(effectiveLocation) * (numberOfJobs + 1)
+function AllianceNavyDispatcher:findClosestShip(x, y)
+    -- TODO: find closest ship, less busy ship algo
+    table.sort(self.navyShips, function(a, b)
+        local qa = a:howBusy()
+        local qb = b:howBusy()
+
+        if qa == qb then
+            local da = distance(a.ship, x, y)
+            local db = distance(b.ship, x, y)
+            return da < db
+        end
+
+        return qa < qb
+    end)
+    for i, v in ipairs(self.navyShips) do
+        print(string.format("#%d Ship %s Queue: %d, Distance: %f",
+            i, v.ship:getCallSign(), v:howBusy(), distance(v.ship, x, y)
+        ))
+    end
+    return self.navyShips[1]
 end
 
