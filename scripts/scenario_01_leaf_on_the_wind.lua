@@ -23,6 +23,7 @@ require("TransportCaptain.lua")
 require("Cortex.lua")
 require("ReaverSwarm.lua")
 require("Wave.lua")
+require("MrUniverse.lua")
 
 stations = {}
 navyCaptains = {}
@@ -41,8 +42,7 @@ function init()
     cortex = Cortex:new(wave)
     dispatcher = AllianceNavyDispatcher:new(cortex)
     
-    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(2 * scale, 5 * scale)
-    wave:registerListener(browncoat)
+    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(6.1 * scale, 5 * scale)
     
     verse:generate(scale)
     
@@ -51,6 +51,8 @@ function init()
     stations[2] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-6 * scale, 5 * scale):setCallSign("DS2")
     stations[3] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-6 * scale, -5 * scale):setCallSign("DS3")
     stations[4] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(6 * scale, -5 * scale):setCallSign("DS4")
+
+    stations[1]:setCommsScript(""):setCommsFunction(MrUniverse_commsBasic)
 
     for i=1,4 do
         local group = CivilianGroup:new()

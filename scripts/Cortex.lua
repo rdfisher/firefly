@@ -12,7 +12,7 @@ function Cortex:new(wave)
 end
 
 function Cortex:reportAttack(ship, sector, x, y)
-    self:broadcastAlert(string.format("Ship %s is under attack! Sector %s", ship:getCallSign(), sector))
+    self:broadcastAlert(string.format("[APB] Ship %s is under attack! Sector %s", ship:getCallSign(), sector))
     table.insert(self.entries, CortexEntry:new(ship, sector, x, y))
 end
 

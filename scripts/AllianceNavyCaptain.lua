@@ -94,7 +94,7 @@ function AllianceNavyCaptain:update(delta)
                 self.ship:getCallSign(), self.current_bulletin.sector, self.current_bulletin.x, self.current_bulletin.y
             ))
             self.cortex:broadcastAlert(string.format(
-                "Ship %s dispatched to investigate hostile activity in sector %s",
+                "[%s] Investigating hostile activity in sector %s",
                 self.ship:getCallSign(), self.current_bulletin.sector
             ))
             self.ship:orderFlyTowards(self.current_bulletin.x, self.current_bulletin.y)

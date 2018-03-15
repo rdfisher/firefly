@@ -12,7 +12,7 @@ On the Border planets, it could be dangerous to stick a gun barrel in someone's 
 
 kraylor = FactionInfo():setName("Alliance Navy")
 kraylor:setGMColor(0, 128, 255)
-kraylor:setEnemy(human)
+-- kraylor:setEnemy(human)
 kraylor:setDescription([[The strength of the Alliance military ensures that the Alliance remains in control.
 Alliance ships have the registry prefix I.A.V. (Interstellar Alliance Vessel).
 Though currently stretched quite thin, the military is still impressive.
