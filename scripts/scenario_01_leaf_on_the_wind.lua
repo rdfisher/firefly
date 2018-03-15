@@ -39,9 +39,6 @@ function init()
     
     verse:generate(scale)
     
-    local swarmX, swarmY = verse.byName["burnham"]:getPosition()
-    
-    
     -- Spawn some stations
     stations[1] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(6 * scale, 5 * scale):setCallSign("DS1")
     stations[2] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-6 * scale, 5 * scale):setCallSign("DS2")
@@ -70,7 +67,7 @@ function init()
         dispatcher:addNavyShip(captain)
     end
 
-    swarm = ReaverSwarm:new(5, swarmX, swarmY, transportCaptains)
+    swarm = ReaverSwarm:new(5, {verse.byName["burnham"], verse.byName["kalidasa"]})
 
     -- Temporary function to test finding probes
     addGMFunction("Find Probes", function()

@@ -1,18 +1,14 @@
 ReaverSwarm = {
   reavers = {},
-  x = 0,
-  y = 0,
+  spawnPoints = {},
   size = 1,
-  targets = {},
   accumulatedDelta = 0
 }
 
-function ReaverSwarm:new(size, x, y, targets)
+function ReaverSwarm:new(size, spawnPoints)
   local o = {}
-  o.x = x
-  o.y = y
+  o.spawnPoints = spawnPoints
   o.size = size 
-  o.targets = targets
   setmetatable(o, self)
   self.__index = self
   return o
@@ -25,7 +21,7 @@ end
 function ReaverSwarm:update(delta)
   self.accumulatedDelta = self.accumulatedDelta + delta
   
-  if self.accumulatedDelta < 10 then
+  if self.accumulatedDelta < 60 then
     return 0
   end
   
@@ -40,13 +36,9 @@ function ReaverSwarm:update(delta)
   
   -- spawn a new one if necessary
   if #self.reavers < self.size then
-    local reaver = CpuShip():setTemplate("Phobos T3"):setFaction("Reavers"):setPosition(self.x, self.y)
-    local targetNumber =  math.floor(random(1, #self.targets + 0.99))
-    local targetCaptain = self.targets[targetNumber]
-    local target = targetCaptain.ship
-    print(target:getCallSign())
-    reaver:orderAttack(target)
-    print(string.format("Reaver %s is hunting", reaver:getCallSign()))
+    local spawnPointIndex = math.random(1, #self.spawnPoints)
+    local x, y = self.spawnPoints[spawnPointIndex]:getPosition()
+    local reaver = CpuShip():setTemplate("Phobos T3"):setFaction("Reavers"):setPosition(x, y):orderRoaming()
     table.insert(self.reavers, reaver)
   end
 end
