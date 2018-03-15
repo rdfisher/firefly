@@ -17,15 +17,13 @@
 
 require("Verse.lua")
 require("CivilianGroup.lua")
-require("EscortObjective.lua")
+require("AllianceNavyCaptain.lua")
 require("TransportCaptain.lua")
 require("Cortex.lua")
 
-groups = {}
 stations = {}
-escortObjectives = {}
+navyCaptains = {}
 transportCaptains = {}
-transportMissions = {}
 
 -- the whole gorram 'verse
 verse = Verse:new()
@@ -57,12 +55,11 @@ function init()
         local x, y = group:getPosition()
         escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
         
-        local objective = EscortObjective:new()
-        objective:assignShip(escort)
-        objective:assignTarget(group)
-        table.insert(escortObjectives, objective)
-
-        table.insert(groups, {group=group, escort=escort})
+        local captain = AllianceNavyCaptain:new()
+        captain:assignShip(escort)
+        captain:assignTarget(group)
+        captain:setCortex(cortex)
+        table.insert(navyCaptains, captain)
     end
 
     -- Temporary function to test finding probes
@@ -78,8 +75,8 @@ function init()
 end
 
 function update(delta)
-    for _, objective in ipairs(escortObjectives) do
-        objective:update(delta)
+    for _, captain in ipairs(navyCaptains) do
+        captain:update(delta)
     end
     for i, captain in ipairs(transportCaptains) do
         if captain:isValid() then
