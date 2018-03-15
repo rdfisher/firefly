@@ -20,10 +20,14 @@ function CivilianGroup:getPosition()
   end
   local xTotal = 0;
   local yTotal = 0;
-  for _, civilian in ipairs(self.civilians) do
-    local x, y = civilian:getPosition()
-    xTotal = xTotal + x
-    yTotal = yTotal + y
+  for i, civilian in ipairs(self.civilians) do
+    if civilian:isValid() then
+      local x, y = civilian:getPosition()
+      xTotal = xTotal + x
+      yTotal = yTotal + y
+    else -- auto clean up ? 
+      table.remove(self.civilians, i)
+    end
   end
   local xMean = xTotal / numberOfCivilians
   local yMean = yTotal / numberOfCivilians

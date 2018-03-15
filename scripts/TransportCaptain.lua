@@ -110,6 +110,9 @@ function TransportCaptain:isUnderAttack(delta)
 end
 
 function TransportCaptain:update(delta)
+    if not self.ship:isValid() then
+        return
+    end
     -- TODO: Signal cortex if under attack
     local ohno = self:isUnderAttack(delta)
     if ohno then
