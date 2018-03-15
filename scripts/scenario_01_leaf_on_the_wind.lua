@@ -81,8 +81,12 @@ function update(delta)
     for _, objective in ipairs(escortObjectives) do
         objective:update(delta)
     end
-    for _, captain in ipairs(transportCaptains) do
-        captain:update(delta)
+    for i, captain in ipairs(transportCaptains) do
+        if captain:isValid() then
+            captain:update(delta)
+        else
+            table.remove(transportCaptains, i)
+        end
     end
 end
 
