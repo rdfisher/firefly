@@ -21,6 +21,7 @@ require("AllianceNavyCaptain.lua")
 require("AllianceNavyDispatcher.lua")
 require("TransportCaptain.lua")
 require("Cortex.lua")
+require("ReaverSwarm.lua")
 
 stations = {}
 navyCaptains = {}
@@ -35,7 +36,10 @@ function init()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(0, 0)
     
     
-    verse:generate(5000)
+    verse:generate(500) -- scale temporarily
+    
+    local swarmX, swarmY = verse.byName["burnham"]:getPosition()
+    
     
     -- Spawn some stations
     stations[1] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(200000, 200000):setCallSign("DS1")
@@ -65,6 +69,8 @@ function init()
         dispatcher:addNavyShip(captain)
     end
 
+    swarm = ReaverSwarm:new(5, swarmX, swarmY, transportCaptains)
+
     -- Temporary function to test finding probes
     addGMFunction("Find Probes", function()
         local probes = findProbes()
@@ -79,6 +85,7 @@ end
 
 function update(delta)
     dispatcher:update(delta)
+    swarm:update(delta)
     for _, captain in ipairs(navyCaptains) do
         captain:update(delta)
     end
