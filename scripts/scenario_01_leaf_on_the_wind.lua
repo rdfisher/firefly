@@ -18,6 +18,7 @@
 require("Verse.lua")
 require("CivilianGroup.lua")
 require("AllianceNavyCaptain.lua")
+require("AllianceNavyDispatcher.lua")
 require("TransportCaptain.lua")
 require("Cortex.lua")
 
@@ -28,6 +29,7 @@ transportCaptains = {}
 -- the whole gorram 'verse
 verse = Verse:new()
 cortex = Cortex:new()
+dispatcher = AllianceNavyDispatcher:new(cortex)
 
 function init()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(2000000, 2000000)
@@ -60,6 +62,7 @@ function init()
         captain:assignTarget(group)
         captain:setCortex(cortex)
         table.insert(navyCaptains, captain)
+        dispatcher:addNavyShip(captain)
     end
 
     -- Temporary function to test finding probes
@@ -75,6 +78,7 @@ function init()
 end
 
 function update(delta)
+    dispatcher:update(delta)
     for _, captain in ipairs(navyCaptains) do
         captain:update(delta)
     end

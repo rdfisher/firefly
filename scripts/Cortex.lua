@@ -9,9 +9,8 @@ function Cortex:new()
     return o
 end
 
-function Cortex:reportAttack(ship, sector, position)
-    print(string.format("Ship %s is under attack! Sector %s", ship:getCallSign(), sector))
-    table.insert(self.entries, CortexEntry:new(ship, sector, position))
+function Cortex:reportAttack(ship, sector, x, y)
+    table.insert(self.entries, CortexEntry:new(ship, sector, x, y))
 end
 
 function Cortex:popLatestBulletin()
@@ -25,15 +24,16 @@ end
 CortexEntry = {
     ship = nil,
     sector = nil,
-    position = nil
+    x = nil,
+    y = nil
 }
 
-function CortexEntry:new(ship, sector, position)
+function CortexEntry:new(ship, sector, x, y)
     local o = {
         ship = ship,
         sector = sector,
-        position = position,
-        investigated = false
+        x = x,
+        y = y
     }
     setmetatable(o, self)
     self.__index = self

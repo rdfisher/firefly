@@ -127,7 +127,8 @@ function TransportCaptain:update(delta)
     local previous_attack_status = self.under_attack
     local ohno = self:isUnderAttack(delta)
     if not previous_attack_status and ohno then
-        self.cortex:reportAttack(self.ship, self.ship:getSectorName(), self.ship:getPosition())
+        local x, y = self.ship:getPosition()
+        self.cortex:reportAttack(self.ship, self.ship:getSectorName(), x, y)
     end
     -- TODO: Stop if attacked and damaged
     if self.ordered and self.integrity <= 0.5 then
