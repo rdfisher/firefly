@@ -67,7 +67,6 @@ function distance(a, b, c, d)
 end
 
 function TransportCaptain:getIntegrity()
-    local level = 0.0;
     local hull = self.ship:getHull() / self.ship:getHullMax()
 
     local shield = 0.0;
