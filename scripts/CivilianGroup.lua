@@ -2,66 +2,48 @@ CivilianGroup = {
   civilians = {}
 }
 
+function CivilianGroup:cost(a, b)
+  return self:distance(a, b)
+end
+
 function CivilianGroup:balance(groups)
-    -- Sort the group by closest centres
-    local distance = nil
-    local pair = {}
     for _, a in ipairs(groups) do
       for _, b in ipairs(groups) do
         if a ~= b then
-          local ax, ay = a:getPosition()
-          local bx, by = b:getPosition()
-          local newDistance = self:distance(ax, ay, bx, by)
-          if distance == nil or newDistance < distance then
-            local distance = newDistance
-            pair = {a=a, b=b, distance=distance}
+          for i, ship in ipairs(b.civilians) do
+            local prev_cost = self:cost(a, b)
+            table.insert(a.civilians, table.remove(b.civilians, i))
+            local new_cost = self:cost(a, b)
+            --print(string.format("ship %d, prev_cost %f, new_cost %f", i, prev_cost, new_cost))
+            if new_cost < prev_cost then
+              -- revert
+              if #a.civilians > 1 then
+                table.insert(b.civilians, table.remove(a.civilians))
+              end
+            end
           end
         end
       end
     end
-
-    if pair.distance < 7 then
-      while pair.b:getSize() > 0 do
-        print(pair.b:getSize())
-        print(pair.a:getSize())
-        pair.a:add(pair.b:remove())
-      end
-    end
-    -- Sort by biggest cluster
-    table.sort(groups, function(a, b)
-        return a:getRadius() < b:getRadius()
-    end)
-
-    for i, c in ipairs(groups) do
-        local x, y = c:getPosition()
-        --print(string.format("Cluster %d centroid position X: %f, Y: %f, size %d, radius %f", i, x, y, c:getSize(), c:getRadius()))
-    end
-
-    for _, g in ipairs(groups) do
-      for _, v in ipairs(groups) do
-        if g ~= v then
-
+    return 0
     -- local g = groups[1] -- smallest cluster
     -- local v = groups[#groups] -- biggest cluster
 
     --print(string.format("Size difference (%d/%d) = %d", g:getSize(), v:getSize(), (v:getSize()-g:getSize())))
     --print(string.format("Radius difference (%d/%d) = %d", g:getRadius(), v:getRadius(), (v:getRadius()-g:getRadius())))
-    local x, y = g:getPosition()
+    -- local x, y = g:getPosition()
     --print(string.format("Picked point %f, %f", x, y))
-    local count = math.floor(
-      ((v:getSize() + v:getRadius()) - (g:getSize() + g:getRadius())) / 5
-    )
-    if count < 5 then
-        return 0
-    end
-    local ships = v:popClosestTo(x, y, 1)
-    for _, ship in ipairs(ships) do
-        g:add(ship)
-    end
-  end
-end
-end
-    return count
+    -- local count = math.floor(
+    --   ((v:getSize() + v:getRadius()) - (g:getSize() + g:getRadius())) / 5
+    -- )
+    -- if count < 5 then
+    --     return 0
+    -- end
+    -- local ships = v:popClosestTo(x, y, 1)
+    -- for _, ship in ipairs(ships) do
+    --     g:add(ship)
+    -- end
+    -- return count
 end
 
 function CivilianGroup:distance(a, b, c, d)

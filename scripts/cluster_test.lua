@@ -42,7 +42,7 @@ end
 local f = newAutotable(2);
 ships = {}
 for i=1,100 do
-    local ship = Ship:new(math.random(0, 40), math.random(0, 100))
+    local ship = Ship:new(math.random(0, 40), math.random(0, 40))
     local x, y = ship:getPosition()
     table.insert(ships, {x=x, y=y})
     
@@ -52,30 +52,30 @@ for i=1,100 do
     --print(string.format("Ship position X: %d, Y: %d", x, y))
 end
 
-for i=1,10 do
+for i=1,100 do
     -- for _,ship in ipairs(ships) do
     --     f[ship.x][ship.y] = '.'
     -- end
     for i, v in ipairs(groups) do
         for _, ship in ipairs(v.civilians) do
             local x, y = ship:getPosition()
-            f[math.floor(x)][math.floor(y)] = i
+            f[math.floor(x)][math.floor(y)] = " "..i
         end
         local x, y = v:getPosition()
         print(string.format("Cluster %d centroid position X: %d, Y: %d, size %d, radius %f", i, x, y, v:getSize(), v:getRadius()))
-        f[math.floor(x)][math.floor(y)] = "."
+        f[math.floor(x)][math.floor(y)] = " ."
     end
     local moved = CivilianGroup:balance(groups)
 
     for x=0,40 do
-        for y=0,100 do
+        for y=0,40 do
             local char = f[x][y]
             if char then
                 io.write(char)
             else
-                io.write(" ")
+                io.write("  ")
             end
-            f[x][y] = " "
+            f[x][y] = "  "
         end
         io.write("\n")
     end
