@@ -125,7 +125,16 @@ function update(delta)
     if balance < 10 then
         balance = balance + delta
     else
-        CivilianGroup:balance(civilians)
+        for i=1,10 do
+            print("Civilian group rebalance in progress")
+            if CivilianGroup:balance(civilians) < 1 then
+                break;
+            end
+            for i, v in ipairs(civilians) do
+                local x, y = v:getPosition()
+                print(string.format("Cluster %d centroid position X: %f, Y: %f, size %d, radius %f", i, x, y, v:getSize(), v:getRadius()))
+            end
+        end
         balance = 0
     end
     dispatcher:update(delta)

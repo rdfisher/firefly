@@ -22,7 +22,7 @@ function Ship:getPosition()
 end
 
 groups = {}
-for i=1,4 do
+for i=1,10 do
     table.insert(groups, CivilianGroup:new())
 end
 function newAutotable(dim)
@@ -46,8 +46,8 @@ for i=1,100 do
     local x, y = ship:getPosition()
     table.insert(ships, {x=x, y=y})
     
-    groups[1]:add(ship)
-    --groups[math.random(#groups)]:add(ship)
+    --groups[1]:add(ship)
+    groups[math.random(#groups)]:add(ship)
     --groups[math.random(#groups-1)]:add(ship)
     --print(string.format("Ship position X: %d, Y: %d", x, y))
 end
@@ -80,7 +80,8 @@ for i=1,100 do
         io.write("\n")
     end
     if moved < 1 then
-        --break
+        print(string.format("finished after %d iterations", i))
+        break
     end
 end
 

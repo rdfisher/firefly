@@ -3,10 +3,11 @@ CivilianGroup = {
 }
 
 function CivilianGroup:cost(a, b)
-  return self:distance(a, b)
+  return self:distance(a, b) * (#a.civilians + 1) * (#b.civilians + 1)
 end
 
 function CivilianGroup:balance(groups)
+    local moved = 0
     for _, a in ipairs(groups) do
       for _, b in ipairs(groups) do
         if a ~= b then
@@ -14,36 +15,17 @@ function CivilianGroup:balance(groups)
             local prev_cost = self:cost(a, b)
             table.insert(a.civilians, table.remove(b.civilians, i))
             local new_cost = self:cost(a, b)
-            --print(string.format("ship %d, prev_cost %f, new_cost %f", i, prev_cost, new_cost))
+            moved = moved + 1
             if new_cost < prev_cost then
               -- revert
-              if #a.civilians > 1 then
-                table.insert(b.civilians, table.remove(a.civilians))
-              end
+              moved = moved - 1
+              table.insert(b.civilians, table.remove(a.civilians))
             end
           end
         end
       end
     end
-    return 0
-    -- local g = groups[1] -- smallest cluster
-    -- local v = groups[#groups] -- biggest cluster
-
-    --print(string.format("Size difference (%d/%d) = %d", g:getSize(), v:getSize(), (v:getSize()-g:getSize())))
-    --print(string.format("Radius difference (%d/%d) = %d", g:getRadius(), v:getRadius(), (v:getRadius()-g:getRadius())))
-    -- local x, y = g:getPosition()
-    --print(string.format("Picked point %f, %f", x, y))
-    -- local count = math.floor(
-    --   ((v:getSize() + v:getRadius()) - (g:getSize() + g:getRadius())) / 5
-    -- )
-    -- if count < 5 then
-    --     return 0
-    -- end
-    -- local ships = v:popClosestTo(x, y, 1)
-    -- for _, ship in ipairs(ships) do
-    --     g:add(ship)
-    -- end
-    -- return count
+    return moved
 end
 
 function CivilianGroup:distance(a, b, c, d)
@@ -89,53 +71,6 @@ end
 
 function CivilianGroup:remove()
   return table.remove(self.civilians)
-end
-
-function CivilianGroup:popClosestTo(x, y, count)
-  local cx, cy = self:getPosition()
-  local candidates = {}
-  local rest = {}
-  for i,v in ipairs(self.civilians) do
-    if self:distance(v, cx,cy) > self:distance(v, x, y) then
-      table.insert(candidates, table.remove(self.civilians, i))
-    else
-      table.insert(rest, table.remove(self.civilians, i))
-    end
-  end 
-  -- table.sort(candidates, function(a, b)
-  --   -- But also furthest away from our centre
-  --   -- local total = self:distance(x, y, cx, cy)
-  --   -- local da = total - self:distance(a, cx, cy) + self:distance(a, x, y)
-  --   -- local db = total - self:distance(b, cx, cy) + self:distance(b, x, y)
-  --   local da = self:distance(a, x, y)
-  --   local db = self:distance(b, x, y)
-  --   return  da > db
-  -- end)
-  output = {}
-  if #candidates < count then
-    -- table.sort(rest, function(a, b)
-    --   local da = self:distance(a, x, y)
-    --   local db = self:distance(b, x, y)
-    --   return  da < db
-    -- end)
-    while #candidates < count and #rest > 0 do
-      table.insert(candidates, table.remove(rest))
-    end
-  end
-  for i=1,count do
-    table.insert(output, table.remove(candidates))
-  end
-  for i=1,#rest do
-    table.insert(self.civilians, table.remove(rest))
-  end
-  for _,v in ipairs(candidates) do
-    table.insert(self.civilians, v)
-  end
-  print(string.format("Moving %d ships", count))
-  for i,v in ipairs(output) do
-    print(string.format("Ship %d distance %f", i, self:distance(v, x, y)))
-  end
-  return output
 end
 
 -- Get largest radius
