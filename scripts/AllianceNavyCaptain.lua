@@ -42,6 +42,8 @@ function AllianceNavyCaptain:investigate(bulletin)
         end
     end
     table.insert(self.investigate_stack, bulletin)
+    -- Reset current mission
+    self.mission_progress = "NONE"
 end
 
 function AllianceNavyCaptain:distance(a, b, c, d)
@@ -76,11 +78,11 @@ end
 
 -- Return how busy we are. Size of our stack + current objective
 function AllianceNavyCaptain:howBusy()
-    local busy = 0
-    if self.investigation then
-        busy = 1
-    end
-    return (#self.investigate_stack + busy)
+    return #self.investigate_stack
+end
+
+function AllianceNavyCaptain:latestBulletin()
+    return self.investigate_stack[#self.investigate_stack]
 end
 
 function AllianceNavyCaptain:update(delta)
@@ -115,17 +117,17 @@ function AllianceNavyCaptain:update(delta)
         end
         print(string.format(
             "Order received by ship %s, proceeding to sector %s, x:%f, y:%f",
-            self.ship:getCallSign(), self.investigate_stack[1].sector, self.investigate_stack[1].x, self.investigate_stack[1].y
+            self.ship:getCallSign(), self:latestBulletin().sector, self:latestBulletin().x, self:latestBulletin().y
         ))
         self.cortex:broadcastAlert(string.format(
             "[%s] Investigating hostile activity in sector %s",
-            self.ship:getCallSign(), self.investigate_stack[1].sector
+            self.ship:getCallSign(), self:latestBulletin().sector
         ))
-        self.ship:orderFlyTowards(self.investigate_stack[1].x, self.investigate_stack[1].y)
+        self.ship:orderFlyTowards(self:latestBulletin().x, self:latestBulletin().y)
     end
 
     if self.mission_progress == "FLYTO" then
-        if self:distance(self.ship, self.investigate_stack[1].x, self.investigate_stack[1].y) < 1000 then
+        if self:distance(self.ship, self:latestBulletin().x, self:latestBulletin().y) < 1000 then
             self.mission_progress = "ROAM"
             self.mission_timer = 0
             self.ship:orderRoaming()
