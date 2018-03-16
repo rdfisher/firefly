@@ -25,7 +25,7 @@ function AllianceNavyDispatcher:update(delta)
         return
     end
 
-    print(string.format("Ship %s is under attack! Sector %s", bulletin.ship:getCallSign(), bulletin.sector))
+    print(string.format("Ship %s is under attack! Sector %s", bulletin.callsign, bulletin.sector))
     -- Find the closest ship
     local ship = self:findClosestShip(bulletin.x, bulletin.y)
     -- Give it a mission to investigate

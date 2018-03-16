@@ -8,8 +8,8 @@ TransportCaptain = {
     docking_time = 0,
     dock_count = 0,
     integrity = 1,
-    under_attack_timer = 0,
-    under_attack = false,
+    red_alert_timer = 0,
+    red_alert = false,
     attacked_counter = 0
 }
 
@@ -90,55 +90,79 @@ function TransportCaptain:getAttackedCounter()
 end
 
 function TransportCaptain:isUnderAttack(delta)
-    -- Enemy on the scanner
-    if not self.under_attack and self.ship:areEnemiesInRange(30000) then
-        self.under_attack = true
-    end
+    local under_attack = false
     -- If integrity fell below previous value
     local currentIntegrity = self:getIntegrity()
     if currentIntegrity < self.integrity then
-        -- Reset attack timeout timer
-        self.under_attack_timer = 0
-        if not self.under_attack then
-            self.under_attack = true
-            self.attacked_counter = self.attacked_counter + 1
-        end
+        under_attack = true
     end
     self.integrity = currentIntegrity
-
-    if self.under_attack then
-        if self.under_attack_timer < 10 then
-            self.under_attack_timer = self.under_attack_timer + delta
-        else
-            self.under_attack = false
-            
-        end
-    end
-
-    return self.under_attack
+    return under_attack
 end
 
 function TransportCaptain:isValid()
     return self.ship:isValid()
 end
 
+function TransportCaptain:findEnemies(range)
+    output = {}
+    for _, object in ipairs(self.ship:getObjectsInRange(range)) do
+        print(object)
+        if object:isValid() and self.ship:isEnemy(object) then
+            table.insert(output, object)
+        end
+    end
+    return output
+end
+
 function TransportCaptain:update(delta)
     if not self.ship:isValid() then
         return
     end
-    -- TODO: Signal cortex if under attack
-    local previous_attack_status = self.under_attack
-    local ohno = self:isUnderAttack(delta)
-    if not previous_attack_status and ohno then
-        local x, y = self.ship:getPosition()
-        self.cortex:reportAttack(self.ship, self.ship:getSectorName(), x, y)
+
+    -- Enemy on the scanner
+    if self.ship:areEnemiesInRange(30000) then
+        self.red_alert_timer = 0
+        if not self.red_alert then
+            self.red_alert = true
+            for _,enemy in ipairs(self:findEnemies(30000)) do
+                self.cortex:enemySpotted(self.ship, enemy)
+            end
+        end
     end
+
+    -- Check if we have suffered damage
+    if self:isUnderAttack() then
+        self.red_alert_timer = 0
+        if not self.red_alert then
+            self.red_alert = true
+            self.cortex:reportAttack(self.ship) -- TODO: this wont report if enemy already on the scanner
+        end
+    end
+
+    -- Cancel red alert if its been on for 10 seconds (re-sending all bulletins)
+    if self.red_alert then
+        if self.red_alert_timer < 10 then
+            self.red_alert_timer = self.red_alert_timer + delta
+        else
+            self.red_alert = false
+        end
+    end
+
     -- TODO: Stop if attacked and damaged
     if self.ordered and self.integrity <= 0.5 then
         self.ship:orderIdle()
         self.ordered = false
     end
     -- TODO: Signal attacker for some role play
+
+    -- If our target is now invalid, just pick a new one
+    if not self.current_target:isValid() then
+        self.ordered = false
+        self:pickNewTarget()
+        return
+    end
+
     -- Start with being given an order to fly
     if not self.ordered and self.integrity > 0.5 then
         local x, y = self.current_target:getPosition()
@@ -149,13 +173,6 @@ function TransportCaptain:update(delta)
 
     -- Short circuit. We are not moving
     if not self.ordered then
-        return
-    end
-
-    -- If our target is now invalid, just pick a new one
-    if not self.current_target:isValid() then
-        self.ordered = false
-        self:pickNewTarget()
         return
     end
 

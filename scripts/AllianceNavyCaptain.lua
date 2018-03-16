@@ -87,6 +87,9 @@ function AllianceNavyCaptain:update(delta)
 
     if not self.investigation then
         if #self.investigate_stack > 0 then
+            for i, v in ipairs(self.investigate_stack) do
+                print(string.format("BULLETIN: %d, CALLSIGN: %s, SECTOR: %s", i, v.callsign, v.sector))
+            end
             self.investigation = true
             self.current_bulletin = table.remove(self.investigate_stack)
             print(string.format(
@@ -105,6 +108,11 @@ function AllianceNavyCaptain:update(delta)
             self.ship:orderFlyTowards(x, y)
         end
     else
+        if self.ship:areEnemiesInRange(10000) then
+            self:orderRoaming()
+        else
+            self.ship:orderFlyTowards(self.current_bulletin.x, self.current_bulletin.y)
+        end
         -- Test to see if we have arrived at our investigation destination
         if self:distance(self.ship, self.current_bulletin.x, self.current_bulletin.y) < 1000 then
             -- ???

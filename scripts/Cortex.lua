@@ -11,9 +11,20 @@ function Cortex:new(wave)
     return o
 end
 
-function Cortex:reportAttack(ship, sector, x, y)
-    self:broadcastAlert(string.format("[APB] Ship %s is under attack! Sector %s", ship:getCallSign(), sector))
-    table.insert(self.entries, CortexEntry:new(ship, sector, x, y))
+function Cortex:reportAttack(ship)
+    local x, y = ship:getPosition()
+    local sector = ship:getSectorName()
+    local callsign = ship:getCallSign()
+    self:broadcastAlert(string.format("[APB] Ship %s is under attack! Sector %s", callsign, sector))
+    table.insert(self.entries, Bulletin:distressCall(ship, callsign, sector, x, y))
+end
+
+function Cortex:enemySpotted(ship, target)
+    local x, y = target:getPosition()
+    local sector = target:getSectorName()
+    local callsign = target:getCallSign()
+    self:broadcastAlert(string.format("[APB] Enemy Ship %s spotted in Sector %s", callsign, sector))
+    table.insert(self.entries, Bulletin:enemySpotted(target, callsign, sector, x, y))
 end
 
 function Cortex:popLatestBulletin()
@@ -27,16 +38,13 @@ function Cortex:broadcastAlert(message)
   self.wave:message(message)
 end
 
-CortexEntry = {
-    ship = nil,
-    sector = nil,
-    x = nil,
-    y = nil
-}
+Bulletin = {}
 
-function CortexEntry:new(ship, sector, x, y)
+function Bulletin:new(type, ship, callsign, sector, x, y)
     local o = {
+        t = type,
         ship = ship,
+        callsign = callsign,
         sector = sector,
         x = x,
         y = y
@@ -44,4 +52,12 @@ function CortexEntry:new(ship, sector, x, y)
     setmetatable(o, self)
     self.__index = self
     return o
+end
+
+function Bulletin:distressCall(ship, callsign, sector, x, y)
+    return Bulletin:new("distressCall", ship, callsign, sector, x, y)
+end
+-- Don't cheat by giving up enemy object
+function Bulletin:enemySpotted(target, callsign, sector, x, y)
+    return Bulletin:new("enemySpotted", nil, callsign, sector, x, y)
 end
