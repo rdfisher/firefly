@@ -27,6 +27,14 @@ function Cortex:enemySpotted(ship, target)
     table.insert(self.entries, Bulletin:enemySpotted(callsign, sector, x, y))
 end
 
+function Cortex:illegalActivity(spaceObject)
+    local x, y = spaceObject:getPosition()
+    local sector = spaceObject:getSectorName()
+    local callsign = spaceObject:getCallSign()
+    self:broadcastAlert(string.format("[APB] Illegal activity involving %s reported in Sector %s", callsign, sector))
+    table.insert(self.entries, Bulletin:illegalActivity(callsign, sector, x, y))
+end
+
 function Cortex:popLatestBulletin()
     if #self.entries > 0 then
         return table.remove(self.entries)
@@ -70,4 +78,7 @@ end
 -- Don't cheat by giving up enemy object
 function Bulletin:enemySpotted(callsign, sector, x, y)
     return Bulletin:new("enemySpotted", nil, callsign, sector, x, y)
+end
+function Bulletin:illegalActivity(sector, x, y)
+    return Bulletin:new("illegalActivity", nil, callsign, sector, x, y)
 end

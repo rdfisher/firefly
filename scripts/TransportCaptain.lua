@@ -119,6 +119,8 @@ function TransportCaptain:update(delta)
         return
     end
 
+    -- TODO: Passively report illegal activity to the cortex
+
     -- Enemy on the scanner
     if self.ship:areEnemiesInRange(30000) then
         self.red_alert_timer = 0
