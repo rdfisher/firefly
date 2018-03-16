@@ -144,7 +144,7 @@ function TransportCaptain:update(delta)
         local x, y = self.current_target:getPosition()
         self.ship:orderFlyTowardsBlind(x, y)
         self.ordered = true
-        print(string.format("Ship %s ordered to sector %s", self.ship:getCallSign(), self.current_target:getSectorName()))
+        --print(string.format("Ship %s ordered to sector %s", self.ship:getCallSign(), self.current_target:getSectorName()))
     end
 
     -- Short circuit. We are not moving
