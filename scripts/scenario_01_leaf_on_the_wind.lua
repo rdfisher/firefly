@@ -23,6 +23,8 @@ require("TransportCaptain.lua")
 require("Cortex.lua")
 require("ReaverSwarm.lua")
 require("Wave.lua")
+require("Browncoat.lua")
+require("DeliverMission.lua")
 
 civilians = {}
 stations = {}
@@ -64,9 +66,10 @@ function init()
     
     verse:generate(scale)
     
-    playerX, playerY = verse.byName['cortex-relay-7']:getPosition()
+    playerX, playerY = verse.byName['persephone']:getPosition()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX + 100, playerY + 100)
     
+    browncoatCaptain = Browncoat:new(browncoat)
     
     stations = {
       verse.byName['cortex-relay-7'],
@@ -78,6 +81,25 @@ function init()
     }
 
     stations[1]:setCommsScript(""):setCommsFunction(MrUniverse)
+
+    local badgerMission = DeliverMission:new(
+      "Badger", 
+      verse.byName['persephone'], 
+      verse.byName['silverhold'],
+      verse.byName['space-bazaar'], 
+      cortex
+    )
+    
+    stations[4]:setCommsScript(""):setCommsFunction(function()
+        if comms_source:getFaction() == "Alliance Navy" then
+          return
+        end
+        setCommsMessage("Badger: I'm above you! Better than! Businessman, see?")
+        addCommsReply("We aim to misbehave.", function()
+            setCommsMessage(badgerMission:getObjective())
+            badgerMission:accept(browncoatCaptain)
+        end)
+    end)
 
     -- Create civilian groups
     for i=1,4 do
@@ -144,6 +166,7 @@ function update(delta)
     end
     dispatcher:update(delta)
     swarm:update(delta)
+    browncoatCaptain:update(delta)
     -- Update all captains
     for _, captains in ipairs({navyCaptains, transportCaptains}) do
         for i, captain in ipairs(captains) do

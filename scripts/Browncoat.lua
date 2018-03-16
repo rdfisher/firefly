@@ -29,7 +29,7 @@ end
 
 function Browncoat:shipSearched(allianceNavyCaptain)
   -- wanted level
-  if (self.wantedLevel > 600)
+  if (self.wantedLevel > 600) then
     victory(allianceNavyCaptain.ship:getFaction())
   end
   
