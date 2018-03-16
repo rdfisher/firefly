@@ -25,7 +25,6 @@ function AllianceNavyDispatcher:update(delta)
         return
     end
 
-    print(string.format("Ship %s is under attack! Sector %s", bulletin.callsign, bulletin.sector))
     -- Cleanup
     for i, v in ipairs(self.navyShips) do
         if not v:isValid() then
@@ -43,24 +42,17 @@ end
 -- effectiveLocation: hasTarget ? target : location
 -- effectiveDistance: distance(effectiveLocation) * (numberOfJobs + 1)
 function AllianceNavyDispatcher:findClosestShip(x, y)
-    -- TODO: find closest ship, less busy ship algo
+    -- TODO: find closest ship
     table.sort(self.navyShips, function(a, b)
-        -- local qa = a:howBusy()
-        -- local qb = b:howBusy()
-
-       -- if qa == qb then
-            local da = distance(a.ship, x, y)
-            local db = distance(b.ship, x, y)
-            return da < db
-        -- end
-
-        -- return qa < qb
+        local da = distance(a.ship, x, y)
+        local db = distance(b.ship, x, y)
+        return da < db
     end)
-    for i, v in ipairs(self.navyShips) do
-        print(string.format("#%d Ship %s Queue: %d, Distance: %f",
-            i, v.ship:getCallSign(), v:howBusy(), distance(v.ship, x, y)
-        ))
-    end
+    -- for i, v in ipairs(self.navyShips) do
+    --     print(string.format("#%d Ship %s Queue: %d, Distance: %f",
+    --         i, v.ship:getCallSign(), v:howBusy(), distance(v.ship, x, y)
+    --     ))
+    -- end
     return self.navyShips[1]
 end
 
