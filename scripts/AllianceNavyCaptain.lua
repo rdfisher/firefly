@@ -1,11 +1,4 @@
-AllianceNavyCaptain = {
-    ship = {},
-    target = {},
-    investigate_stack = {},
-    current_bulletin = nil,
-    cortex = nil,
-    investigation = false
-}
+AllianceNavyCaptain = {}
 
 function AllianceNavyCaptain:new()
     local o = {
@@ -14,7 +7,9 @@ function AllianceNavyCaptain:new()
         investigate_stack = {},
         current_bulletin = nil,
         cortex = nil,
-        investigation = false
+        investigation = false,
+        mission_timer = 0,
+        mission_progress = 1
     }
     setmetatable(o, self)
     self.__index = self
@@ -88,6 +83,10 @@ function AllianceNavyCaptain:howBusy()
     return (#self.investigate_stack + busy)
 end
 
+local MISSION_STATE_NONE = 1
+local MISSION_STATE_FLYTO = 1
+local MISSION_STATE_ROAM = 2
+local MISSION_STATE_COMPLETE = 2
 function AllianceNavyCaptain:update(delta)
     if not self:isValid() then
         return
@@ -98,6 +97,7 @@ function AllianceNavyCaptain:update(delta)
         -- Check to see if we should be
         if #self.investigate_stack > 0 then
             self.investigation = true
+            self.mission_progress = MISSION_STATE_NONE
         end
     end
 
@@ -105,34 +105,42 @@ function AllianceNavyCaptain:update(delta)
         -- Move towards the centre of our flock
         local x, y = self.target:getPosition()
         self.ship:orderFlyTowards(x, y)
-    else
+        return
+    end
+
+    -- State machine of (fly-to, roam for X seconds, then clear the bulletin)
+    self.mission_timer = self.mission_timer + delta
+    if self.mission_progress == MISSION_STATE_NONE then
+        self.mission_progress = MISSION_STATE_FLYTO
+        self.mission_timer = 0
         print(string.format("MISSION LIST FOR %s", self.ship:getCallSign()))
         for i, v in ipairs(self.investigate_stack) do
             print(string.format("BULLETIN: %d, TYPE: %s, TARGET CALLSIGN: %s, SECTOR: %s", i, v.t, v.callsign, v.sector))
         end
-        -- State machine of (fly-to, roam for X seconds, then clear the bulletin)
+        print(string.format(
+            "Order received by ship %s, proceeding to sector %s, x:%f, y:%f",
+            self.ship:getCallSign(), self.investigate_stack[1].sector, self.investigate_stack[1].x, self.investigate_stack[1].y
+        ))
+        self.cortex:broadcastAlert(string.format(
+            "[%s] Investigating hostile activity in sector %s",
+            self.ship:getCallSign(), self.investigate_stack[1].sector
+        ))
         self.ship:orderFlyTowards(self.investigate_stack[1].x, self.investigate_stack[1].y)
+    end
+
+    if self.mission_progress == MISSION_STATE_FLYTO then
         if self:distance(self.ship, self.investigate_stack[1].x, self.investigate_stack[1].y) < 1000 then
-            -- ???
-            -- Then clear the investigation
+            self.mission_progress = MISSION_STATE_ROAM
+            self.mission_timer = 0
+            self.ship:orderRoaming()
+        end
+    end
+
+    if self.mission_progress == MISSION_STATE_ROAM then
+        if self.mission_timer > 10 and not self.ship:areEnemiesInRange(10000) then
+            self.mission_progress = MISSION_STATE_NONE
             self.investigation = false
             table.remove(self.investigate_stack)
         end
     end
-    -- print(string.format(
-    --     "Order received by ship %s, proceeding to sector %s, x:%f, y:%f",
-    --     self.ship:getCallSign(), self.current_bulletin.sector, self.current_bulletin.x, self.current_bulletin.y
-    -- ))
-    -- self.cortex:broadcastAlert(string.format(
-    --     "[%s] Investigating hostile activity in sector %s",
-    --     self.ship:getCallSign(), self.current_bulletin.sector
-    -- ))
-
-        -- if self.ship:areEnemiesInRange(10000) then
-        --     self:orderRoaming()
-        -- else
-        --     self.ship:orderFlyTowards(self.current_bulletin.x, self.current_bulletin.y)
-        -- end
-        -- Test to see if we have arrived at our investigation destination
-    -- end
 end
