@@ -62,9 +62,11 @@ function init()
     cortex = Cortex:new(wave)
     dispatcher = AllianceNavyDispatcher:new(cortex)
     
-    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(6.1 * scale, 5 * scale)
-    
     verse:generate(scale)
+    
+    playerX, playerY = verse.byName['cortex-relay-7']:getPosition()
+    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX + 100, playerY + 100)
+    
     
     stations = {
       verse.byName['cortex-relay-7'],
