@@ -26,6 +26,13 @@ function AllianceNavyDispatcher:update(delta)
     end
 
     print(string.format("Ship %s is under attack! Sector %s", bulletin.callsign, bulletin.sector))
+    -- Cleanup
+    for i, v in ipairs(self.navyShips) do
+        if not v:isValid() then
+            table.remove(self.navyShips, i)
+        end
+    end
+
     -- Find the closest ship
     local ship = self:findClosestShip(bulletin.x, bulletin.y)
     -- Give it a mission to investigate

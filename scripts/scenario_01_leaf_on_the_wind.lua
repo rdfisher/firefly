@@ -130,28 +130,28 @@ function update(delta)
     if balance < 10 then
         balance = balance + delta
     else
-        print("Civilian group rebalance in progress")
+        balance = 0
         for i=1,10 do
             if CivilianGroup:balance(civilians) < 1 then
                 break;
             end
         end
-        for i, v in ipairs(civilians) do
-            local x, y = v:getPosition()
-            print(string.format("Cluster %d centroid position X: %f, Y: %f, size %d, radius %f", i, x, y, v:getSize(), v:getRadius()))
-        end
-        balance = 0
+        -- print("Civilian group rebalance in progress")
+        -- for i, v in ipairs(civilians) do
+        --     local x, y = v:getPosition()
+        --     print(string.format("Cluster %d centroid position X: %f, Y: %f, size %d, radius %f", i, x, y, v:getSize(), v:getRadius()))
+        -- end
     end
     dispatcher:update(delta)
     swarm:update(delta)
-    for _, captain in ipairs(navyCaptains) do
-        captain:update(delta)
-    end
-    for i, captain in ipairs(transportCaptains) do
-        if captain:isValid() then
-            captain:update(delta)
-        else
-            table.remove(transportCaptains, i)
+    -- Update all captains
+    for _, captains in ipairs({navyCaptains, transportCaptains}) do
+        for i, captain in ipairs(captains) do
+            if captain:isValid() then
+                captain:update(delta)
+            else
+                table.remove(captains, i)
+            end
         end
     end
 end
