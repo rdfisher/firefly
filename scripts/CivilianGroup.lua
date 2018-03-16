@@ -10,7 +10,7 @@ function CivilianGroup:balance(groups)
 
     for i, c in ipairs(groups) do
         local x, y = c:getPosition()
-        print(string.format("Cluster %d centroid position X: %f, Y: %f, size %d, radius %f", i, x, y, c:getSize(), c:getRadius()))
+        --print(string.format("Cluster %d centroid position X: %f, Y: %f, size %d, radius %f", i, x, y, c:getSize(), c:getRadius()))
     end
     local g = groups[1] -- smallest cluster
     local v = groups[#groups] -- biggest cluster
@@ -18,9 +18,11 @@ function CivilianGroup:balance(groups)
     --print(string.format("Radius difference (%d/%d) = %d", g:getRadius(), v:getRadius(), (v:getRadius()-g:getRadius())))
     local x, y = g:getPosition()
     --print(string.format("Picked point %f, %f", x, y))
-    local count = math.floor(((v:getSize()-g:getSize()) /2))
-    if count < 1 then
-        count = 1
+    local count = math.floor(
+      ((v:getSize() + v:getRadius()) - (g:getSize() + g:getRadius())) / 5
+    )
+    if count < 5 then
+        count = 0
     end
     local ships = v:popClosestTo(x, y, count)
     for _, ship in ipairs(ships) do
@@ -71,8 +73,15 @@ function CivilianGroup:add(civilian)
 end
 
 function CivilianGroup:popClosestTo(x, y, count)
+  local cx, cy = self:getPosition()
   table.sort(self.civilians, function(a, b)
-    return self:distance(a, x, y) < self:distance(b, x, y)
+    -- But also furthest away from our centre
+    -- local total = self:distance(x, y, cx, cy)
+    -- local da = total - self:distance(a, cx, cy) + self:distance(a, x, y)
+    -- local db = total - self:distance(b, cx, cy) + self:distance(b, x, y)
+    local da = self:distance(a, x, y)
+    local db = self:distance(b, x, y)
+    return  da < db
   end)
   output = {}
   for i=1,count do
