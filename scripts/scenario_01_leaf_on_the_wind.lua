@@ -24,6 +24,7 @@ require("Cortex.lua")
 require("ReaverSwarm.lua")
 require("Wave.lua")
 
+civilians = {}
 stations = {}
 navyCaptains = {}
 transportCaptains = {}
@@ -84,6 +85,7 @@ function init()
             captain:setCortex(cortex)
             table.insert(transportCaptains, captain)
         end
+        table.insert(civilians, group)
         local x, y = group:getPosition()
         escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
         
@@ -109,7 +111,14 @@ function init()
     end)
 end
 
+local balance = 0
 function update(delta)
+    if balance < 10 then
+        balance = balance + delta
+    else
+        CivilianGroup:balance(civilians)
+        balance = 0
+    end
     dispatcher:update(delta)
     swarm:update(delta)
     for _, captain in ipairs(navyCaptains) do
