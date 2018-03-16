@@ -58,10 +58,10 @@ end
 function Bulletin:getPosition()
     if self.t == "distressCall" then
         if self.ship:isValid() then
-            return self.ship:getPosition()
+            self.x, self.y = self.ship:getPosition()
         end
     end
-    return self.x, self,y
+    return self.x, self.y
 end
 
 function Bulletin:distressCall(ship, callsign, sector, x, y)
