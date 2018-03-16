@@ -79,6 +79,6 @@ end
 function Bulletin:enemySpotted(callsign, sector, x, y)
     return Bulletin:new("enemySpotted", nil, callsign, sector, x, y)
 end
-function Bulletin:illegalActivity(sector, x, y)
+function Bulletin:illegalActivity(callsign, sector, x, y)
     return Bulletin:new("illegalActivity", nil, callsign, sector, x, y)
 end
