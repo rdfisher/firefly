@@ -1,7 +1,8 @@
 Browncoat = {
     ship = {},
     wantedLevel = 0,
-    missions = {}
+    missions = {},
+    missionsCompleted = 0
 }
 
 function Browncoat:new(ship)
@@ -43,9 +44,25 @@ function Browncoat:acceptMission(mission)
   table.insert(self.missions, mission)
 end
 
+function Browncoat:removeMission(mission)
+  for i, m in ipairs(self.missions) do
+    if mission == m then
+      table.remove(self.missions, i)
+    end
+  end
+end
+
+function Browncoat:completeMisison(mission)
+  self:removeMission(mission)
+  self.missionsCompleted = self.missionsCompleted + 1
+  if self.missionsCompleted > 2 then
+    victory(self.ship:getFaction())
+  end
+end
+
 --[[
 implicit mission interface:
     accept(browncoat)
     update(delta)
-    shipSearched(cruiser)
+    shipSearched(cruiserCaptain)
 ]]
