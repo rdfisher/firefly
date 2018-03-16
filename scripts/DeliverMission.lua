@@ -60,7 +60,7 @@ function DeliverMission:update(delta)
         self.destinationStation:getSectorName()
       )
     )
-    self.cortex:enemySpotted(self.originStation, self.browncoat.ship)
+    self.cortex:illegalActivity(self.originStation)
     self.browncoat:misbehave(1200)
     
     self.state = self.STATE_HEADING_TO_DESTINATION
