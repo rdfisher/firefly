@@ -4,8 +4,7 @@ function AllianceNavyCaptain:new()
     local o = {
         ship = {},
         target = {},
-        investigate_stack = {},
-        current_bulletin = nil,
+        bulletins = {},
         cortex = nil,
         investigation = false,
         mission_timer = 0,
@@ -35,13 +34,13 @@ end
 function AllianceNavyCaptain:investigate(bulletin)
     -- Remove any previous sightings of this callsign
     if bulletin.t == "enemySpotted" then
-        for i,b in ipairs(self.investigate_stack) do
+        for i,b in ipairs(self.bulletins) do
             if b.t == "enemySpotted" and b.callsign == bulletin.callsign then
-                table.remove(self.investigate_stack, i)
+                table.remove(self.bulletins, i)
             end
         end
     end
-    table.insert(self.investigate_stack, bulletin)
+    table.insert(self.bulletins, bulletin)
     -- Reset current mission
     self.mission_progress = "NONE"
 end
@@ -78,11 +77,11 @@ end
 
 -- Return how busy we are. Size of our stack + current objective
 function AllianceNavyCaptain:howBusy()
-    return #self.investigate_stack
+    return #self.bulletins
 end
 
 function AllianceNavyCaptain:latestBulletin()
-    return self.investigate_stack[#self.investigate_stack]
+    return self.bulletins[#self.bulletins]
 end
 
 function AllianceNavyCaptain:update(delta)
@@ -93,7 +92,7 @@ function AllianceNavyCaptain:update(delta)
     -- If we are not on a mission
     if not self.investigation then
         -- Check to see if we should be
-        if #self.investigate_stack > 0 then
+        if #self.bulletins > 0 then
             self.investigation = true
             self.mission_progress = "NONE"
         end
@@ -112,7 +111,7 @@ function AllianceNavyCaptain:update(delta)
         self.mission_progress = "FLYTO"
         self.mission_timer = 0
         print(string.format("MISSION LIST FOR %s", self.ship:getCallSign()))
-        for i, v in ipairs(self.investigate_stack) do
+        for i, v in ipairs(self.bulletins) do
             print(string.format("BULLETIN: %d, TYPE: %s, TARGET CALLSIGN: %s, SECTOR: %s", i, v.t, v.callsign, v.sector))
         end
         print(string.format(
@@ -123,11 +122,13 @@ function AllianceNavyCaptain:update(delta)
             "[%s] Investigating hostile activity in sector %s",
             self.ship:getCallSign(), self:latestBulletin().sector
         ))
-        self.ship:orderFlyTowards(self:latestBulletin().x, self:latestBulletin().y)
+        local x, y = self:latestBulletin():getPosition()
+        self.ship:orderFlyTowards(x, y)
     end
 
     if self.mission_progress == "FLYTO" then
-        if self:distance(self.ship, self:latestBulletin().x, self:latestBulletin().y) < 1000 then
+        local x, y = self:latestBulletin():getPosition()
+        if self:distance(self.ship, x, y) < 5000 then
             self.mission_progress = "ROAM"
             self.mission_timer = 0
             self.ship:orderRoaming()
@@ -138,7 +139,7 @@ function AllianceNavyCaptain:update(delta)
         if self.mission_timer > 10 and not self.ship:areEnemiesInRange(10000) then
             self.mission_progress = "NONE"
             self.investigation = false
-            table.remove(self.investigate_stack)
+            table.remove(self.bulletins)
         end
     end
 end
