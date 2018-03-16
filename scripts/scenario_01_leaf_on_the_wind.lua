@@ -66,11 +66,14 @@ function init()
     
     verse:generate(scale)
     
-    -- Spawn some stations
-    stations[1] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(6 * scale, 5 * scale):setCallSign("DS1")
-    stations[2] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-6 * scale, 5 * scale):setCallSign("DS2")
-    stations[3] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-6 * scale, -5 * scale):setCallSign("DS3")
-    stations[4] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(6 * scale, -5 * scale):setCallSign("DS4")
+    stations = {
+      verse.byName['cortex-relay-7'],
+      verse.byName['ezra'],
+      verse.byName['athens'],
+      verse.byName['persephone'],
+      verse.byName['space-bazaar'],
+      verse.byName['silverhold']
+    }
 
     stations[1]:setCommsScript(""):setCommsFunction(MrUniverse)
 
