@@ -107,7 +107,6 @@ end
 function TransportCaptain:findEnemies(range)
     output = {}
     for _, object in ipairs(self.ship:getObjectsInRange(range)) do
-        print(object)
         if object:isValid() and self.ship:isEnemy(object) then
             table.insert(output, object)
         end

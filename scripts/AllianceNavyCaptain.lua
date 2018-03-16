@@ -83,10 +83,6 @@ function AllianceNavyCaptain:howBusy()
     return (#self.investigate_stack + busy)
 end
 
-local MISSION_STATE_NONE = 1
-local MISSION_STATE_FLYTO = 1
-local MISSION_STATE_ROAM = 2
-local MISSION_STATE_COMPLETE = 2
 function AllianceNavyCaptain:update(delta)
     if not self:isValid() then
         return
@@ -97,7 +93,7 @@ function AllianceNavyCaptain:update(delta)
         -- Check to see if we should be
         if #self.investigate_stack > 0 then
             self.investigation = true
-            self.mission_progress = MISSION_STATE_NONE
+            self.mission_progress = "NONE"
         end
     end
 
@@ -110,8 +106,8 @@ function AllianceNavyCaptain:update(delta)
 
     -- State machine of (fly-to, roam for X seconds, then clear the bulletin)
     self.mission_timer = self.mission_timer + delta
-    if self.mission_progress == MISSION_STATE_NONE then
-        self.mission_progress = MISSION_STATE_FLYTO
+    if self.mission_progress == "NONE" then
+        self.mission_progress = "FLYTO"
         self.mission_timer = 0
         print(string.format("MISSION LIST FOR %s", self.ship:getCallSign()))
         for i, v in ipairs(self.investigate_stack) do
@@ -128,17 +124,17 @@ function AllianceNavyCaptain:update(delta)
         self.ship:orderFlyTowards(self.investigate_stack[1].x, self.investigate_stack[1].y)
     end
 
-    if self.mission_progress == MISSION_STATE_FLYTO then
+    if self.mission_progress == "FLYTO" then
         if self:distance(self.ship, self.investigate_stack[1].x, self.investigate_stack[1].y) < 1000 then
-            self.mission_progress = MISSION_STATE_ROAM
+            self.mission_progress = "ROAM"
             self.mission_timer = 0
             self.ship:orderRoaming()
         end
     end
 
-    if self.mission_progress == MISSION_STATE_ROAM then
+    if self.mission_progress == "ROAM" then
         if self.mission_timer > 10 and not self.ship:areEnemiesInRange(10000) then
-            self.mission_progress = MISSION_STATE_NONE
+            self.mission_progress = "NONE"
             self.investigation = false
             table.remove(self.investigate_stack)
         end
