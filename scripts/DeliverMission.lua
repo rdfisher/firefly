@@ -32,12 +32,13 @@ end
 
 function DeliverMission:getObjective()
   return string.format(
-      "%s: There are certain... items... which I'd like to be moved from %s (sector $s) to %s (sector %s).", 
+      "%s: There are certain... items... which I'd like to be moved from %s (sector %s) to %s (sector %s).", 
       self.giverName, 
       self.originStation:getCallSign(), 
       self.originStation:getSectorName(), 
-      self.destinationStation:getSectorName(),
-      self.destinationStation:getCallSign()
+      self.destinationStation:getCallSign(),
+      self.destinationStation:getSectorName()
+      
   )
 end
 
@@ -50,6 +51,7 @@ function DeliverMission:update(delta)
   if self.state == self.STATE_NEW then
     return
   end
+  
   if (self.state == self.STATE_HEADING_TO_ORIGIN) and (self.browncoat.ship:isDocked(self.originStation)) then
     self.giverHome:sendCommsMessage(
       self.browncoat.ship, 
@@ -64,6 +66,7 @@ function DeliverMission:update(delta)
     self.browncoat:misbehave(1200)
     
     self.state = self.STATE_HEADING_TO_DESTINATION
+    return
   end
   
   if (self.state == STATE_HEADING_TO_DESTINATION) and (self.browncoat.ship:isDocked(self.destinationStation)) then

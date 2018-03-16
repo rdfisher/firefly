@@ -97,7 +97,7 @@ function init()
         setCommsMessage("Badger: I'm above you! Better than! Businessman, see?")
         addCommsReply("We aim to misbehave.", function()
             setCommsMessage(badgerMission:getObjective())
-            badgerMission:accept(browncoatCaptain)
+            browncoatCaptain:acceptMission(badgerMission)
         end)
     end)
 
