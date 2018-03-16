@@ -52,7 +52,7 @@ function Browncoat:removeMission(mission)
   end
 end
 
-function Browncoat:completeMisison(mission)
+function Browncoat:completeMission(mission)
   self:removeMission(mission)
   self.missionsCompleted = self.missionsCompleted + 1
   if self.missionsCompleted > 2 then

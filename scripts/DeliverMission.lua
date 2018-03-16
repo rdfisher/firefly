@@ -16,6 +16,7 @@ DeliverMission = {
   STATE_NEW = "new",
   STATE_HEADING_TO_ORIGIN = "headingToOrigin",
   STATE_HEADING_TO_DESTINATION = "headingToDestination"
+  STATE_DONE = "done"
 }
 
 function DeliverMission:new(giverName, giverHome, originStation, destinationStation, cortex)
@@ -78,6 +79,7 @@ function DeliverMission:update(delta)
       )
     )
     self.browncoat:completeMission(self)
+    self.state = self.STATE_DONE
   end
 end
 
