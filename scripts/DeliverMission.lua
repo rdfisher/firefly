@@ -15,7 +15,7 @@ DeliverMission = {
   state = "new",
   STATE_NEW = "new",
   STATE_HEADING_TO_ORIGIN = "headingToOrigin",
-  STATE_HEADING_TO_DESTINATION = "headingToDestination"
+  STATE_HEADING_TO_DESTINATION = "headingToDestination",
   STATE_DONE = "done"
 }
 
