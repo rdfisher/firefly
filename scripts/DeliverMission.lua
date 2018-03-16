@@ -50,7 +50,7 @@ function DeliverMission:update(delta)
   if self.state == self.STATE_NEW then
     return
   end
-  if (self.state == self.STATE_HEADING_TO_ORIGIN) and (self.browncoat.ship:isDocked(self.origin)) then
+  if (self.state == self.STATE_HEADING_TO_ORIGIN) and (self.browncoat.ship:isDocked(self.originStation)) then
     self.giverHome:sendCommsMessage(
       self.browncoat.ship, 
       string.format(
@@ -66,7 +66,7 @@ function DeliverMission:update(delta)
     self.state = self.STATE_HEADING_TO_DESTINATION
   end
   
-  if (self.state == STATE_HEADING_TO_DESTINATION) and (self.browncoat.ship:isDocked(self.destination)) then
+  if (self.state == STATE_HEADING_TO_DESTINATION) and (self.browncoat.ship:isDocked(self.destinationStation)) then
     self.giverHome:sendCommsMessage(
       self.browncoat.ship, 
       string.format(
