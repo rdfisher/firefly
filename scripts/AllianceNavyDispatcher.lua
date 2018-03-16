@@ -38,16 +38,16 @@ end
 function AllianceNavyDispatcher:findClosestShip(x, y)
     -- TODO: find closest ship, less busy ship algo
     table.sort(self.navyShips, function(a, b)
-        local qa = a:howBusy()
-        local qb = b:howBusy()
+        -- local qa = a:howBusy()
+        -- local qb = b:howBusy()
 
-        if qa == qb then
+       -- if qa == qb then
             local da = distance(a.ship, x, y)
             local db = distance(b.ship, x, y)
             return da < db
-        end
+        -- end
 
-        return qa < qb
+        -- return qa < qb
     end)
     for i, v in ipairs(self.navyShips) do
         print(string.format("#%d Ship %s Queue: %d, Distance: %f",
