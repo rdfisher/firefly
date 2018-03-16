@@ -74,21 +74,30 @@ function init()
 
     stations[1]:setCommsScript(""):setCommsFunction(MrUniverse)
 
+    -- Create civilian groups
     for i=1,4 do
         local group = CivilianGroup:new()
-        for c=1,10 do
-            local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-6 * scale, 6 * scale), random(-5 * scale, 5 * scale)):orderDock(stations[i])
-            group:add(ship)
-            local captain = TransportCaptain:new()
-            captain:assignShip(ship)
-            captain:assignTargets(stations)
-            captain:setCortex(cortex)
-            table.insert(transportCaptains, captain)
-        end
         table.insert(civilians, group)
+    end
+    -- add transports to one group
+    local group = civilians[1]
+    for c=1,40 do
+        local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-6 * scale, 6 * scale), random(-5 * scale, 5 * scale))
+        ship:setWarpDrive(true)
+        group:add(ship)
+        local captain = TransportCaptain:new()
+        captain:assignShip(ship)
+        captain:assignTargets(stations)
+        captain:setCortex(cortex)
+        table.insert(transportCaptains, captain)
+    end
+    -- rebalance groups
+    CivilianGroup:balance(civilians)
+    -- Add Navy escorts
+    for _,group in ipairs(civilians) do
         local x, y = group:getPosition()
         escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
-        
+        escort:setWarpDrive(true):setJumpDrive(true):setJumpDriveRange(0,10000000)
         local captain = AllianceNavyCaptain:new()
         captain:assignShip(escort)
         captain:assignTarget(group)
