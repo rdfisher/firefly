@@ -1,13 +1,19 @@
+require("ObjectivePlan.lua")
+
 AllianceNavyCaptain = {
     MISSION_ROAM_TIMEOUT = 10,
     ROAM_SCANNER_RANGE = 10000,
     ILLEGAL_REP_THRESHOLD = 300,
     CRIME_SCANNER_DELAY = 10,
-    CRIME_SCANNER_RANGE = 5000
+    CRIME_SCANNER_RANGE = 5000,
+    ARREST_TIMEOUT = 10,
+    MAX_DISTANCE_AWAY_FROM_FLOCK = 5000
 }
 
 function AllianceNavyCaptain:new()
     local o = {
+        plan = {},
+        planPassiveScan = {},
         ship = {},
         target = {},
         bulletins = {},
@@ -19,6 +25,7 @@ function AllianceNavyCaptain:new()
     }
     setmetatable(o, self)
     self.__index = self
+    self:initObjectives()
     return o
 end
 
@@ -113,74 +120,166 @@ function AllianceNavyCaptain:scanRangeForCriminals(range)
     return objects
 end
 
+function AllianceNavyCaptain:initObjectives()
+    self.plan = ObjectivePlan:new()
+    self.plan:add(Objective:new({
+        name = "default",
+        enter = function(captain)
+            -- Default behavior Move towards the centre of our flock
+            local x, y = captain.target:getPosition()
+            captain.ship:orderFlyTowards(x, y)
+        end,
+        update = function(captain, delta)
+            -- Check to see if we should be
+            if #captain.bulletins > 0 then
+                return "investigate"
+            end
+        end
+    }))
+    self.plan:add(Objective:new({
+        name = "returnToFlock",
+        enter = function(captain)
+            local x, y = captain.target:getPosition()
+            captain.ship:orderFlyTowardsBlind(x, y)
+        end,
+        update = function(captain)
+            -- Stop flying blind once we are inside flock radius
+            if captain:distance(captain.ship, x, y) < captain.target:getRadius() then
+                return "default"
+            end
+        end
+    }))
+    self.plan:add(Objective:new({
+        name = "investigate",
+        enter = function(captain)
+            -- State machine of (fly-to, roam for X seconds, then clear the bulletin)
+            print(string.format("MISSION LIST FOR %s", captain.ship:getCallSign()))
+            for i, v in ipairs(captain.bulletins) do
+                print(string.format("BULLETIN: %d, TYPE: %s, TARGET CALLSIGN: %s, SECTOR: %s", i, v.t, v.callsign, v.sector))
+            end
+            print(string.format(
+                "Order received by ship %s, proceeding to sector %s, x:%f, y:%f",
+                captain.ship:getCallSign(), captain:latestBulletin().sector, captain:latestBulletin().x, captain:latestBulletin().y
+            ))
+            captain.cortex:broadcastAlert(string.format(
+                "[%s] Investigating hostile activity in sector %s",
+                captain.ship:getCallSign(), captain:latestBulletin().sector
+            ))
+            local x, y = captain:latestBulletin():getPosition()
+            captain.ship:orderFlyTowards(x, y)
+        end,
+        update = function(captain, delta)
+            local x, y = captain:latestBulletin():getPosition()
+            if captain:distance(captain.ship, x, y) < 5000 then
+                return "roam"
+            end
+            local x, y = captain.target:getPosition()
+            -- Check if we are too far from out flock
+            if captain:distance(captain.ship, x, y) > captain.target:getRadius() + captain.MAX_DISTANCE_AWAY_FROM_FLOCK then
+                return "returnToFlock"
+            end
+        end
+    }))
+    self.plan:add(Objective:new({
+        name = "roam",
+        enter = function(captain)
+            captain.ship:orderRoaming()
+        end,
+        update = function(captain, delta)
+            -- TODO: If any criminals in range, order them to stop and search them
+            if captain.cortex.browncoat.ship:getReputationPoints() < captain.ILLEGAL_REP_THRESHOLD then
+                local distanceToCriminal = captain:distance(captain.cortex.browncoat.ship, captain.ship)
+                if distanceToCriminal < captain.ARREST_DISTANCE then
+                    return "arrest"
+                end
+            end
+
+            if delta > captain.MISSION_ROAM_TIMEOUT and not captain.ship:areEnemiesInRange(captain.ROAM_SCANNER_RANGE) then
+                table.remove(captain.bulletins)
+                return "default"
+            end
+
+            -- Check if we are too far from out flock
+            if captain:distance(captain.ship, x, y) > captain.target:getRadius() + captain.MAX_DISTANCE_AWAY_FROM_FLOCK then
+                return "returnToFlock"
+            end
+        end
+    }))
+    self.plan:add(Objective:new({
+        name = "arrest",
+        enter = function(captain)
+            captain.ship:sendMessage(captain.cortex.browncoat.ship, [[
+                HALT! Hold your position and prepare to be boarded
+            ]])
+            local x, y = captain.cortex.browncoat.ship:getPosition()
+            captain.ship:orderFlyTowardsBlind(x, y)
+        end,
+        update = function(captain, delta)
+            if captain.cortex.browncoat.ship:getVelocity() < 0.5 then
+                -- Stop close to them, so we don't crash into
+                if captain:distance(captain.ship, captain.cortex.browncoat.ship) < 1000 then
+                    captain.ship:orderIdle()
+                    return "proceedWithArrest"
+                end
+            else
+                if delta > captain.ARREST_TIMEOUT then
+                    return "attackBrowncoat"
+                end
+            end
+        end
+    }))
+    self.plan:add(Objective:new({
+        name = "proceedWithArrest",
+        enter = function(captain)
+            captain.ship:sendMessage(captain.cortex.browncoat.ship, [[
+                Thankyou for complying. This will go on the official report
+            ]])
+        end,
+        update = function(captain, delta)
+            if captain.cortex.browncoat.ship:getVelocity() > 0.5 then
+                captain.ship:sendMessage(captain.cortex.browncoat.ship, [[
+                    We told you to keep still. Eat our wrath now!
+                ]])
+                return "attackBrowncoat"
+            end
+            if delta > captain.SEARCH_DELAY then
+                captain.cortex.browncoat:shipSearched(captain)
+                return "default"
+            end
+        end
+    }))
+    self.plan:add(Objective:new({
+        name = "attackBrowncoat",
+        enter = function(captain)
+            captain.ship:sendMessage(captain.cortex.browncoat.ship, [[
+                You've chosen to die. Prepare to die.
+            ]])
+            captain.ship:orderAttack(captain.cortex.browncoat.ship)
+        end,
+        update = function(captain)
+            if delta > 99999 and captain:distance(captain.ship, captain.cortex.browncoat.ship) > 9999 then
+                return "default"
+            end
+        end
+    }))
+
+    self.planPassiveScan = ObjectivePlan:new()
+    self.planPassiveScan:add(Objective:new({
+        name = "default",
+        interval = self.CRIME_SCANNER_DELAY,
+        update = function(captain)
+            if captain:distance(captain.ship, captain.cortex.browncoat.ship) < self.CRIME_SCANNER_RANGE then
+                self.cortex:reportSighting(delta, captain.cortex.browncoat.ship)
+            end
+        end
+    }))
+end
+
 function AllianceNavyCaptain:update(delta)
     if not self:isValid() then
         return
     end
 
-    -- Scan the area for Browncoats
-    if self.crime_scanner_timeout < self.CRIME_SCANNER_DELAY then
-        self.crime_scanner_timeout = self.crime_scanner_timeout + delta
-    else
-        self.crime_scanner_timeout = 0
-        local criminals = self:scanRangeForCriminals(self.CRIME_SCANNER_RANGE)
-        for _, criminal in ipairs(criminals) do
-            -- Report them to the cortex
-            self.cortex:reportSighting(delta, criminal)
-        end
-    end
-
-    -- If we are not on a mission
-    if not self.investigation then
-        -- Check to see if we should be
-        if #self.bulletins > 0 then
-            self.investigation = true
-            self.mission_progress = "NONE"
-            return
-        end
-
-        -- Default behavior Move towards the centre of our flock
-        local x, y = self.target:getPosition()
-        self.ship:orderFlyTowards(x, y)
-        return
-    end
-
-    -- State machine of (fly-to, roam for X seconds, then clear the bulletin)
-    self.mission_timer = self.mission_timer + delta
-    if self.mission_progress == "NONE" then
-        self.mission_progress = "FLYTO"
-        self.mission_timer = 0
-        print(string.format("MISSION LIST FOR %s", self.ship:getCallSign()))
-        for i, v in ipairs(self.bulletins) do
-            print(string.format("BULLETIN: %d, TYPE: %s, TARGET CALLSIGN: %s, SECTOR: %s", i, v.t, v.callsign, v.sector))
-        end
-        print(string.format(
-            "Order received by ship %s, proceeding to sector %s, x:%f, y:%f",
-            self.ship:getCallSign(), self:latestBulletin().sector, self:latestBulletin().x, self:latestBulletin().y
-        ))
-        self.cortex:broadcastAlert(string.format(
-            "[%s] Investigating hostile activity in sector %s",
-            self.ship:getCallSign(), self:latestBulletin().sector
-        ))
-        local x, y = self:latestBulletin():getPosition()
-        self.ship:orderFlyTowards(x, y)
-    end
-
-    if self.mission_progress == "FLYTO" then
-        local x, y = self:latestBulletin():getPosition()
-        if self:distance(self.ship, x, y) < 5000 then
-            self.mission_progress = "ROAM"
-            self.mission_timer = 0
-            self.ship:orderRoaming()
-        end
-    end
-
-    if self.mission_progress == "ROAM" then
-        -- TODO: If any criminals in range, order them to stop and search them
-        if self.mission_timer > self.MISSION_ROAM_TIMEOUT and not self.ship:areEnemiesInRange(self.ROAM_SCANNER_RANGE) then
-            self.mission_progress = "NONE"
-            self.investigation = false
-            table.remove(self.bulletins)
-        end
-    end
+    self.plan:update(self, delta)
+    self.planPassiveScan:update(self, delta)
 end
