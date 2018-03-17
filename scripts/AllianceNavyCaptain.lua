@@ -8,7 +8,7 @@ AllianceNavyCaptain = {
     CRIME_SCANNER_RANGE = 5000,
     ARREST_TIMEOUT = 10,
     MAX_DISTANCE_AWAY_FROM_FLOCK = 5000,
-    ARREST_DISTANCE = 2000,
+    ARREST_DISTANCE = 5000,
     SEARCH_DELAY = 10
 }
 
@@ -211,7 +211,7 @@ function AllianceNavyCaptain:initObjectives()
     self.plan:add(Objective:new({
         name = "arrest",
         enter = function(captain)
-            captain.ship:sendMessage(captain.cortex.browncoat.ship, [[
+            captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                 HALT! Hold your position and prepare to be boarded
             ]])
             local x, y = captain.cortex.browncoat.ship:getPosition()
@@ -234,13 +234,13 @@ function AllianceNavyCaptain:initObjectives()
     self.plan:add(Objective:new({
         name = "proceedWithArrest",
         enter = function(captain)
-            captain.ship:sendMessage(captain.cortex.browncoat.ship, [[
+            captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                 Thankyou for complying. This will go on the official report
             ]])
         end,
         update = function(captain, delta)
             if captain.cortex.browncoat.ship:getVelocity() > 0.5 then
-                captain.ship:sendMessage(captain.cortex.browncoat.ship, [[
+                captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                     We told you to keep still. Eat our wrath now!
                 ]])
                 return "attackBrowncoat"
@@ -254,7 +254,7 @@ function AllianceNavyCaptain:initObjectives()
     self.plan:add(Objective:new({
         name = "attackBrowncoat",
         enter = function(captain)
-            captain.ship:sendMessage(captain.cortex.browncoat.ship, [[
+            captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                 You've chosen to die. Prepare to die.
             ]])
             captain.ship:orderAttack(captain.cortex.browncoat.ship)

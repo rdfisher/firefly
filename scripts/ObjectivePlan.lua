@@ -65,7 +65,7 @@ function Objective:new(objective)
     if objective.interval ~= nil then
         o.interval = objective.interval
     end
-    if objective.enterFunction ~= nil then
+    if objective.enter ~= nil then
         o.enterFunction = objective.enter
     end
     if objective.update ~= nil then
