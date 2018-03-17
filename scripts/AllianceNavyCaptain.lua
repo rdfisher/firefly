@@ -12,8 +12,8 @@ AllianceNavyCaptain = {
 
 function AllianceNavyCaptain:new()
     local o = {
-        plan = {},
-        planPassiveScan = {},
+        plan = ObjectivePlan:new(),
+        planPassiveScan = ObjectivePlan:new(),
         ship = {},
         target = {},
         bulletins = {},
@@ -121,7 +121,6 @@ function AllianceNavyCaptain:scanRangeForCriminals(range)
 end
 
 function AllianceNavyCaptain:initObjectives()
-    self.plan = ObjectivePlan:new()
     self.plan:add(Objective:new({
         name = "default",
         enter = function(captain)
@@ -263,16 +262,15 @@ function AllianceNavyCaptain:initObjectives()
         end
     }))
 
-    self.planPassiveScan = ObjectivePlan:new()
-    self.planPassiveScan:add(Objective:new({
-        name = "default",
-        interval = self.CRIME_SCANNER_DELAY,
-        update = function(captain)
-            if captain:distance(captain.ship, captain.cortex.browncoat.ship) < self.CRIME_SCANNER_RANGE then
-                self.cortex:reportSighting(delta, captain.cortex.browncoat.ship)
-            end
-        end
-    }))
+    -- self.planPassiveScan:add(Objective:new({
+    --     name = "default",
+    --     interval = self.CRIME_SCANNER_DELAY,
+    --     update = function(captain)
+    --         if captain:distance(captain.ship, captain.cortex.browncoat.ship) < self.CRIME_SCANNER_RANGE then
+    --             self.cortex:reportSighting(delta, captain.cortex.browncoat.ship)
+    --         end
+    --     end
+    -- }))
 end
 
 function AllianceNavyCaptain:update(delta)
