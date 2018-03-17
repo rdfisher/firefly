@@ -9,7 +9,8 @@ AllianceNavyCaptain = {
     ARREST_TIMEOUT = 10,
     MAX_DISTANCE_AWAY_FROM_FLOCK = 5000,
     ARREST_DISTANCE = 5000,
-    SEARCH_DELAY = 10
+    SEARCH_DELAY = 10,
+    MINIMUM_ARREST_SPEED = 10 -- meters/s
 }
 
 function AllianceNavyCaptain:new()
@@ -218,7 +219,8 @@ function AllianceNavyCaptain:initObjectives()
             captain.ship:orderFlyTowardsBlind(x, y)
         end,
         update = function(captain, delta)
-            if captain.cortex.browncoat.ship:getVelocity() < 0.5 then
+            -- Velocity is in meters per second. 100% impulse seems to be around ~100m/s
+            if captain.cortex.browncoat:getVelocity() < captain.MINIMUM_ARREST_SPEED then
                 -- Stop close to them, so we don't crash into
                 if captain:distance(captain.ship, captain.cortex.browncoat.ship) < 1000 then
                     captain.ship:orderIdle()
@@ -239,7 +241,7 @@ function AllianceNavyCaptain:initObjectives()
             ]])
         end,
         update = function(captain, delta)
-            if captain.cortex.browncoat.ship:getVelocity() > 0.5 then
+            if captain.cortex.browncoat:getVelocity() > captain.MINIMUM_ARREST_SPEED then
                 captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                     We told you to keep still. Eat our wrath now!
                 ]])
@@ -262,7 +264,7 @@ function AllianceNavyCaptain:initObjectives()
             ]])
             captain.ship:orderAttack(captain.cortex.browncoat.ship)
         end,
-        update = function(captain)
+        update = function(captain, delta)
             if delta > 99999 and captain:distance(captain.ship, captain.cortex.browncoat.ship) > 9999 then
                 return "default"
             end

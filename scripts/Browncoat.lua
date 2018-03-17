@@ -19,6 +19,11 @@ function Browncoat:update(delta)
   end
 end
 
+function Browncoat:getVelocity()
+  local x, y = self.ship:getVelocity()
+  return math.max(math.abs(x), math.abs(y))
+end
+
 function Browncoat:shipSearched(allianceNavyCaptain)
   if (self.ship:getReputationPoints() < 200) then
     -- arrested
