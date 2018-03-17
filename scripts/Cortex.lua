@@ -1,8 +1,11 @@
 Cortex = {
     entries = {},
     last_sighting = 0,
-    SIGHTING_REP_THRESHOLD = 400,
-    SIGHTING_DELAY = 1
+    SIGHTING_REP_THRESHOLD = 600,
+    SIGHTING_DELAY = 1,
+    REP_ENEMY_THRESHOLD = 200,
+    rep_check_timeout = 0,
+    REP_CHECK_DELAY = 10
 }
 
 function Cortex:new(wave, browncoat)
@@ -12,6 +15,19 @@ function Cortex:new(wave, browncoat)
     setmetatable(o, self)
     self.__index = self
     return o
+end
+
+function Cortex:update(delta)
+    if self.rep_check_timeout < self.REP_CHECK_DELAY then
+        self.rep_check_timeout = self.rep_check_timeout + delta
+    else
+        self.rep_check_timeout = 0
+        if self.browncoat.ship:getReputationPoints() < self.REP_ENEMY_THRESHOLD then
+            -- TODO: Set faction Alliance Navy to enemy
+        else
+            -- TODO: Set faction to friendly
+        end
+    end
 end
 
 function Cortex:reportAttack(ship)

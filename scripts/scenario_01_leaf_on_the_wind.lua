@@ -177,6 +177,7 @@ function update(delta)
         --     print(string.format("Cluster %d centroid position X: %f, Y: %f, size %d, radius %f", i, x, y, v:getSize(), v:getRadius()))
         -- end
     end
+    cortex:update(delta)
     dispatcher:update(delta)
     swarm:update(delta)
     browncoatCaptain:update(delta)

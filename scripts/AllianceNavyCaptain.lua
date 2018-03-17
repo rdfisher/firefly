@@ -1,6 +1,9 @@
 AllianceNavyCaptain = {
     MISSION_ROAM_TIMEOUT = 10,
-    ROAM_SCANNER_RANGE = 10000
+    ROAM_SCANNER_RANGE = 10000,
+    ILLEGAL_REP_THRESHOLD = 300,
+    CRIME_SCANNER_DELAY = 10,
+    CRIME_SCANNER_RANGE = 5000
 }
 
 function AllianceNavyCaptain:new()
@@ -11,7 +14,8 @@ function AllianceNavyCaptain:new()
         cortex = nil,
         investigation = false,
         mission_timer = 0,
-        mission_progress = 1
+        mission_progress = 1,
+        crime_scanner_timeout = 0
     }
     setmetatable(o, self)
     self.__index = self
@@ -98,9 +102,32 @@ function AllianceNavyCaptain:latestBulletin()
     return self.bulletins[#self.bulletins]
 end
 
+function AllianceNavyCaptain:scanRangeForCriminals(range)
+    objects = {}
+    local allShipsInRange = self.ship:getObjectsInRange(range)
+    for _, object in ipairs(allShipsInRange) do
+        if object:isValid() and object:getFaction() == "Browncoats" and object:getReputationPoints() < self.ILLEGAL_REP_THRESHOLD then
+            table.insert(objects, object)
+        end
+    end
+    return objects
+end
+
 function AllianceNavyCaptain:update(delta)
     if not self:isValid() then
         return
+    end
+
+    -- Scan the area for Browncoats
+    if self.crime_scanner_timeout < self.CRIME_SCANNER_DELAY then
+        self.crime_scanner_timeout = self.crime_scanner_timeout + delta
+    else
+        self.crime_scanner_timeout = 0
+        local criminals = self:scanRangeForCriminals(self.CRIME_SCANNER_RANGE)
+        for _, criminal in ipairs(criminals) do
+            -- Report them to the cortex
+            self.cortex:reportIllegalSightings(delta, criminal)
+        end
     end
 
     -- If we are not on a mission
@@ -109,11 +136,10 @@ function AllianceNavyCaptain:update(delta)
         if #self.bulletins > 0 then
             self.investigation = true
             self.mission_progress = "NONE"
+            return
         end
-    end
 
-    if not self.investigation then
-        -- Move towards the centre of our flock
+        -- Default behavior Move towards the centre of our flock
         local x, y = self.target:getPosition()
         self.ship:orderFlyTowards(x, y)
         return
@@ -150,6 +176,7 @@ function AllianceNavyCaptain:update(delta)
     end
 
     if self.mission_progress == "ROAM" then
+        -- TODO: If any criminals in range, order them to stop and search them
         if self.mission_timer > self.MISSION_ROAM_TIMEOUT and not self.ship:areEnemiesInRange(self.ROAM_SCANNER_RANGE) then
             self.mission_progress = "NONE"
             self.investigation = false
