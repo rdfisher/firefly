@@ -13,6 +13,9 @@ function TransportCaptain:new()
         integrity = 1,
         red_alert_timer = 0,
         red_alert = false,
+        sighting_timer = 0,
+
+        SIGHTING_DELAY = 3,
         SCANNER_RANGE = 30000,
         DOCK_TIMEOUT = 10.0,
         SURRENDER_DAMAGE_THRESHOLD = 0.5,
@@ -94,14 +97,20 @@ function TransportCaptain:isValid()
     return self.ship:isValid()
 end
 
-function TransportCaptain:findEnemies(range)
-    output = {}
-    for _, object in ipairs(self.ship:getObjectsInRange(range)) do
-        if object:isValid() and self.ship:isEnemy(object) then
-            table.insert(output, object)
+function TransportCaptain:reportIllegalSightings(delta, ships)
+    for _, object in ipairs(ships) do
+        if object:isValid() and object:getFaction() == "Browncoats" then
+            self.cortex:reportSighting(delta, object)
         end
     end
-    return output
+end
+
+function TransportCaptain:reportEnemySightings(ships)
+    for _, object in ipairs(ships) do
+        if object:isValid() and self.ship:isEnemy(object) then
+            self.cortex:enemySpotted(self.ship, object)
+        end
+    end
 end
 
 function TransportCaptain:update(delta)
@@ -109,15 +118,20 @@ function TransportCaptain:update(delta)
         return
     end
 
-    -- TODO: Passively report illegal activity to the cortex
-
-    -- Enemy on the scanner
-    if self.ship:areEnemiesInRange(self.SCANNER_RANGE) then
-        self.red_alert_timer = 0
-        if not self.red_alert then
-            self.red_alert = true
-            for _,enemy in ipairs(self:findEnemies(self.SCANNER_RANGE)) do
-                self.cortex:enemySpotted(self.ship, enemy)
+    -- Scanning delay
+    if self.sighting_timer < self.SIGHTING_DELAY then
+        self.sighting_timer  = self.sighting_timer + delta
+    else
+        self.sighting_timer = 0
+        -- Passively report illegal activity to the cortex
+        local allShipsInRange = self.ship:getObjectsInRange(self.SCANNER_RANGE)
+        self:reportIllegalSightings(delta, allShipsInRange)
+        -- Enemy on the scanner
+        if self.ship:areEnemiesInRange(self.SCANNER_RANGE) then
+            self.red_alert_timer = 0
+            if not self.red_alert then
+                self.red_alert = true
+                self:reportEnemySightings(allShipsInRange)
             end
         end
     end

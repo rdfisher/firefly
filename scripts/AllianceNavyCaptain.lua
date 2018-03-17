@@ -1,4 +1,7 @@
-AllianceNavyCaptain = {}
+AllianceNavyCaptain = {
+    MISSION_ROAM_TIMEOUT = 10,
+    ROAM_SCANNER_RANGE = 10000
+}
 
 function AllianceNavyCaptain:new()
     local o = {
@@ -31,11 +34,21 @@ function AllianceNavyCaptain:isValid()
     return self.ship:isValid()
 end
 
+function AllianceNavyCaptain:shouldDedupeByCallsign(bulletin_type)
+    if bulletin_type == "enemySpotted" then
+        return true
+    end
+    if bulletin_type == "illegalActivity" then
+        return true
+    end
+    return false
+end
+
 function AllianceNavyCaptain:investigate(bulletin)
     -- Remove any previous sightings of this callsign
-    if bulletin.t == "enemySpotted" then
+    if self:shouldDedupeByCallsign(bulletin.t) then
         for i,b in ipairs(self.bulletins) do
-            if b.t == "enemySpotted" and b.callsign == bulletin.callsign then
+            if self:shouldDedupeByCallsign(b.t) and b.callsign == bulletin.callsign then
                 table.remove(self.bulletins, i)
             end
         end
@@ -43,6 +56,7 @@ function AllianceNavyCaptain:investigate(bulletin)
     table.insert(self.bulletins, bulletin)
     -- Reset current mission
     self.mission_progress = "NONE"
+    self.investigation = false
 end
 
 function AllianceNavyCaptain:distance(a, b, c, d)
@@ -136,7 +150,7 @@ function AllianceNavyCaptain:update(delta)
     end
 
     if self.mission_progress == "ROAM" then
-        if self.mission_timer > 10 and not self.ship:areEnemiesInRange(10000) then
+        if self.mission_timer > self.MISSION_ROAM_TIMEOUT and not self.ship:areEnemiesInRange(self.ROAM_SCANNER_RANGE) then
             self.mission_progress = "NONE"
             self.investigation = false
             table.remove(self.bulletins)

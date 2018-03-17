@@ -1,11 +1,14 @@
 Cortex = {
     entries = {},
-    wave = {}
+    last_sighting = 0,
+    SIGHTING_REP_THRESHOLD = 400,
+    SIGHTING_DELAY = 1
 }
 
-function Cortex:new(wave)
+function Cortex:new(wave, browncoat)
     local o = {}
     o.wave = wave
+    o.browncoat = browncoat
     setmetatable(o, self)
     self.__index = self
     return o
@@ -33,6 +36,27 @@ function Cortex:illegalActivity(spaceObject)
     local callsign = spaceObject:getCallSign()
     self:broadcastAlert(string.format("[APB] Illegal activity involving %s reported in Sector %s", callsign, sector))
     table.insert(self.entries, Bulletin:illegalActivity(callsign, sector, x, y))
+
+    -- Only used against the player
+    self.rep_timer = 0
+end
+
+function Cortex:reportSighting(delta, target)
+    -- if self.last_sighting < self.SIGHTING_DELAY then
+    --     self.last_sighting = self.last_sighting + delta
+    -- else
+    --     self.last_sighting = 0
+        if target:getReputationPoints() < self.SIGHTING_REP_THRESHOLD then
+            -- reset timer
+            self.rep_timer = 0
+            -- add bulletin
+            local x, y = target:getPosition()
+            local sector = target:getSectorName()
+            local callsign = target:getCallSign()
+            self:broadcastAlert(string.format("[APB] Illegal activity involving %s reported in Sector %s", callsign, sector))
+            table.insert(self.entries, Bulletin:illegalActivity(callsign, sector, x, y))
+        end
+    -- end
 end
 
 function Cortex:popLatestBulletin()
