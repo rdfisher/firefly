@@ -69,7 +69,6 @@ function init()
     
     playerX, playerY = verse.byName['persephone']:getPosition()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX + 100, playerY + 100)
-    
     browncoatCaptain = Browncoat:new(browncoat)
     
     stations = {
