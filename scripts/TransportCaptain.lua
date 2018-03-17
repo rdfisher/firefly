@@ -1,17 +1,4 @@
-TransportCaptain = {
-    ship = {},
-    cortex = {},
-    targets = {},
-    current_target = nil,
-    ordered = false,
-    docking = false,
-    docking_time = 0,
-    dock_count = 0,
-    integrity = 1,
-    red_alert_timer = 0,
-    red_alert = false,
-    attacked_counter = 0
-}
+TransportCaptain = {}
 
 function TransportCaptain:new()
     local o = {
@@ -22,7 +9,14 @@ function TransportCaptain:new()
         ordered = false,
         docking = false,
         docking_time = 0,
-        dock_count = 0
+        dock_count = 0,
+        integrity = 1,
+        red_alert_timer = 0,
+        red_alert = false,
+        SCANNER_RANGE = 30000,
+        DOCK_TIMEOUT = 10.0,
+        SURRENDER_DAMAGE_THRESHOLD = 0.5,
+        RED_ALERT_CANCEL_TIMEOUT = 10
     }
     setmetatable(o, self)
     self.__index = self
@@ -85,10 +79,6 @@ function TransportCaptain:getIntegrity()
     return integrity
 end
 
-function TransportCaptain:getAttackedCounter()
-    return self.attacked_counter
-end
-
 function TransportCaptain:isUnderAttack(delta)
     local under_attack = false
     -- If integrity fell below previous value
@@ -122,11 +112,11 @@ function TransportCaptain:update(delta)
     -- TODO: Passively report illegal activity to the cortex
 
     -- Enemy on the scanner
-    if self.ship:areEnemiesInRange(30000) then
+    if self.ship:areEnemiesInRange(self.SCANNER_RANGE) then
         self.red_alert_timer = 0
         if not self.red_alert then
             self.red_alert = true
-            for _,enemy in ipairs(self:findEnemies(30000)) do
+            for _,enemy in ipairs(self:findEnemies(self.SCANNER_RANGE)) do
                 self.cortex:enemySpotted(self.ship, enemy)
             end
         end
@@ -143,7 +133,7 @@ function TransportCaptain:update(delta)
 
     -- Cancel red alert if its been on for 10 seconds (re-sending all bulletins)
     if self.red_alert then
-        if self.red_alert_timer < 10 then
+        if self.red_alert_timer < self.RED_ALERT_CANCEL_TIMEOUT then
             self.red_alert_timer = self.red_alert_timer + delta
         else
             self.red_alert = false
@@ -151,7 +141,7 @@ function TransportCaptain:update(delta)
     end
 
     -- TODO: Stop if attacked and damaged
-    if self.ordered and self.integrity <= 0.5 then
+    if self.ordered and self.integrity <= self.SURRENDER_DAMAGE_THRESHOLD then
         self.ship:orderIdle()
         self.ordered = false
     end
@@ -165,7 +155,7 @@ function TransportCaptain:update(delta)
     end
 
     -- Start with being given an order to fly
-    if not self.ordered and self.integrity > 0.5 then
+    if not self.ordered and self.integrity > self.SURRENDER_DAMAGE_THRESHOLD then
         local x, y = self.current_target:getPosition()
         self.ship:orderFlyTowardsBlind(x, y)
         self.ordered = true
@@ -189,7 +179,7 @@ function TransportCaptain:update(delta)
     if self.docking and self.ship:isDocked(self.current_target) then
         self.docking_time = self.docking_time + delta
         -- Undock after 10 seconds
-        if self.docking_time > 10.0 then
+        if self.docking_time > self.DOCK_TIMEOUT then
             self.dock_count = self.dock_count + 1
             self.docking = false
             self:pickNewTarget()
