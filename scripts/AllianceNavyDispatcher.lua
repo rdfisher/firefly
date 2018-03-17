@@ -32,10 +32,29 @@ function AllianceNavyDispatcher:update(delta)
         end
     end
 
+    -- If this is a distress call, get to the navy ship in charge
+    if bulletin.t == "distressCall" then
+        local ship = self:findResponsibleShip(bulletin.callsign)
+        if ship ~= nil then
+            ship:investigate(bulletin)
+            return
+        end
+    end
+
     -- Find the closest ship
     local ship = self:findClosestShip(bulletin.x, bulletin.y)
     -- Give it a mission to investigate
     ship:investigate(bulletin)
+end
+
+function AllianceNavyDispatcher:findResponsibleShip(callsign)
+    for i, v in ipairs(self.navyShips) do
+        for _, charge in ipairs(v.target) do
+            if charge:isValid() and charge:getCallSign() == bulletin.callsign then
+                return v
+            end
+        end
+    end
 end
 
 -- Room for improvement:

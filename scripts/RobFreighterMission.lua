@@ -40,7 +40,7 @@ end
 
 function RobFreighterMission:getObjective()
   return string.format(
-      "%s: There's a trinket I'd like you to ... acquire... for me.\nIt's currently in the hold of the freighter %s (last seen in sector %d).", 
+      "%s: There's a trinket I'd like you to ... acquire... for me.\nIt's currently in the hold of the freighter %s (last seen in sector %s).", 
       self.giverName, 
       self.targetFreighterCaptain.ship:getCallSign(), 
       self.targetFreighterCaptain.ship:getSectorName()      
