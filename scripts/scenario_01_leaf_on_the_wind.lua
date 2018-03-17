@@ -56,7 +56,7 @@ end
 
 
 function init()
-    local scale = 1000
+    local scale = 5000
   
     -- huge distance away:  players should never find it
     local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(200 * scale, 100 * scale):setCallSign("APB")
@@ -146,7 +146,13 @@ function init()
         dispatcher:addNavyShip(captain)
     end
 
-    swarm = ReaverSwarm:new(5, {verse.byName["burnham"], verse.byName["kalidasa"]})
+    print (verse.byName["burnham"]:getFaction())
+
+    local swarm1X, swarm1Y = verse.byName["burnham"]:getPosition()
+    swarm1 = ReaverSwarm:new(swarm1X, swarm1Y, scale * 2, 10)
+
+    local swarm2X, swarm2Y = verse.byName["kalidasa"]:getPosition()
+    swarm2 = ReaverSwarm:new(swarm2X, swarm2Y, scale * 2, 10)
 
     -- Temporary function to test finding probes
     addGMFunction("Find Probes", function()
@@ -179,7 +185,8 @@ function update(delta)
     end
     cortex:update(delta)
     dispatcher:update(delta)
-    swarm:update(delta)
+    swarm1:update(delta)
+    swarm2:update(delta)
     browncoatCaptain:update(delta)
     badger:update(delta)
     -- Update all captains
