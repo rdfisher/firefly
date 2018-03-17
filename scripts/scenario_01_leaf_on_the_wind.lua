@@ -25,6 +25,7 @@ require("ReaverSwarm.lua")
 require("Wave.lua")
 require("Browncoat.lua")
 require("DeliverMission.lua")
+require("Badger.lua")
 
 civilians = {}
 stations = {}
@@ -55,7 +56,7 @@ end
 
 
 function init()
-    local scale = 5000
+    local scale = 1000
   
     -- huge distance away:  players should never find it
     local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(200 * scale, 100 * scale):setCallSign("APB")
@@ -81,24 +82,37 @@ function init()
     }
 
     stations[1]:setCommsScript(""):setCommsFunction(MrUniverse)
-
-    local badgerMission = DeliverMission:new(
-      "Badger", 
-      verse.byName['persephone'], 
-      verse.byName['silverhold'],
-      verse.byName['space-bazaar'], 
+    
+    badger = Badger:new(
+      browncoatCaptain,
+      verse.byName['persephone'],
+      {
+        verse.byName['space-bazaar'],
+        verse.byName['silverhold'],
+        verse.byName['ezra'],
+        verse.byName['athens']
+      }, 
       cortex
     )
     
     stations[4]:setCommsScript(""):setCommsFunction(function()
-        if comms_source:getFaction() == "Alliance Navy" then
-          return
-        end
+      if comms_source:getFaction() == "Alliance Navy" then
+        return
+      end
+        
+      if badger:isMissionInProgress() then
+        setCommsMessage("Badger: Did you get that thing done yet?")
+        return
+      end
+        
+      if badger:isMissionAvailable() then
+        local badgerMission = badger:getAvailableMission()
+        setCommsMessage(badgerMission:getObjective())
+        browncoatCaptain:acceptMission(badgerMission)
+        badger:acceptMission(badgerMission)
+      else
         setCommsMessage("Badger: I'm above you! Better than! Businessman, see?")
-        addCommsReply("We aim to misbehave.", function()
-            setCommsMessage(badgerMission:getObjective())
-            browncoatCaptain:acceptMission(badgerMission)
-        end)
+      end
     end)
 
     -- Create civilian groups
@@ -167,6 +181,7 @@ function update(delta)
     dispatcher:update(delta)
     swarm:update(delta)
     browncoatCaptain:update(delta)
+    badger:update(delta)
     -- Update all captains
     for _, captains in ipairs({navyCaptains, transportCaptains}) do
         for i, captain in ipairs(captains) do
