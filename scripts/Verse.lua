@@ -49,22 +49,22 @@ function Verse:generate(scale)
       
   -- planets + moons (stations)
     -- cortex relay 7: Mr Universe
-    self.byName['cortex-relay-7'] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-9.75 * scale, 2.5 * scale):setCallSign("cortex-relay-7")
+    self.byName['cortex-relay-7'] = SpaceStation():setTemplate("Medium Station"):setFaction("neutral"):setCanBeDestroyed(false):setPosition(-9.75 * scale, 2.5 * scale):setCallSign("cortex-relay-7")
     
     -- ezra: Niska
-    self.byName['ezra'] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-5.3 * scale, -2.8 * scale):setCallSign("ezra")
+    self.byName['ezra'] = SpaceStation():setTemplate("Medium Station"):setFaction("neutral"):setCanBeDestroyed(false):setPosition(-5.3 * scale, -2.8 * scale):setCallSign("ezra")
     
     -- athens: Patience
-    self.byName['athens'] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(-3 * scale, -1.5 * scale):setCallSign("athens")
+    self.byName['athens'] = SpaceStation():setTemplate("Medium Station"):setFaction("neutral"):setCanBeDestroyed(false):setPosition(-3 * scale, -1.5 * scale):setCallSign("athens")
     
     -- persephone: Badger
-    self.byName['persephone'] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(2.45 * scale, -2.9 * scale):setCallSign("persephone")
+    self.byName['persephone'] = SpaceStation():setTemplate("Medium Station"):setFaction("neutral"):setCanBeDestroyed(false):setPosition(2.45 * scale, -2.9 * scale):setCallSign("persephone")
     
     -- space bazaar: Amnon Duul
-    self.byName['space-bazaar'] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(4 * scale, 1 * scale):setCallSign("space-bazaar")
+    self.byName['space-bazaar'] = SpaceStation():setTemplate("Medium Station"):setFaction("neutral"):setCanBeDestroyed(false):setPosition(4 * scale, 1 * scale):setCallSign("space-bazaar")
     
     -- silverhold
-    self.byName['silverhold'] = SpaceStation():setTemplate("Medium Station"):setFaction("Independent"):setPosition(2.7 * scale, 4.5 * scale):setCallSign("silverhold")
+    self.byName['silverhold'] = SpaceStation():setTemplate("Medium Station"):setFaction("neutral"):setCanBeDestroyed(false):setPosition(2.7 * scale, 4.5 * scale):setCallSign("silverhold")
     
   -- asteroids
 end
