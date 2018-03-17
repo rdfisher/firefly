@@ -2,7 +2,6 @@ Browncoat = {
     ship = {},
     missions = {},
     missionsCompleted = 0,
-    misbehaving = 0
 }
 
 function Browncoat:new(ship)
@@ -14,46 +13,21 @@ function Browncoat:new(ship)
     return o
 end
 
-function Browncoat:update(delta)
-  if self.misbehaving > 0 then
-    local tookReputation = self.ship:takeReputationPoints(delta * self.misbehaving)
-    if (not tookReputation) then
-      self.ship:setReputationPoints(0)
-    end
-  else
-    if self.ship:getReputationPoints() < 1000 then
-      self.ship:addReputationPoints(delta)
-    end
-  end  
-  
+function Browncoat:update(delta) 
   for _, mission in ipairs(self.missions) do
     mission:update(delta)
   end
 end
 
-function Browncoat:startMisbehaving()
-  self.misbehaving = self.misbehaving + 1
-  if self.ship:getReputationPoints() > 500 then
-    self.ship:setReputationPoints(500)
-  end
-end
-
-function Browncoat:stopMisbehaving()
-  self.misbehaving = self.misbehaving - 1
-  if self.misbehaving < 0 then
-    self.misbehaving = 0
-  end
-end
-
 function Browncoat:shipSearched(allianceNavyCaptain)
-  -- wanted level
-  if (self.ship:getReputationPoints() < 200) or (self.misbehaving > 0) then
+  if (self.ship:getReputationPoints() < 200) then
+    -- arrested
     victory(allianceNavyCaptain.ship:getFaction())
   end
   
-  --missions
+  -- check missions
   for _, mission in ipairs(self.missions) do
-    mission:shipSearched(allianceCruiser)
+    mission:shipSearched(allianceNavyCaptain)
   end
 end
 

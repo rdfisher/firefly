@@ -69,7 +69,6 @@ function DeliverMission:update(delta)
       )
     )
     self.cortex:illegalActivity(self.originStation)
-    self.browncoat:startMisbehaving()
     
     self.state = self.STATE_HEADING_TO_DESTINATION
     return
@@ -83,7 +82,6 @@ function DeliverMission:update(delta)
         self.giverName
       )
     )
-    self.browncoat:stopMisbehaving()
     self.browncoat:completeMission(self)
     if type(self.giver) ~= "nil" then
       self.giver:missionCompleted(self)
@@ -93,5 +91,8 @@ function DeliverMission:update(delta)
 end
 
 function DeliverMission:shipSearched(cruiserCaptain)
-  -- already accounted for by misbehaviour level
+  if self.state == self.STATE_HEADING_TO_DESTINATION then
+    -- uh oh! caught with contraband on board
+    victory(cruiserCaptain.ship:getFaction())
+  end
 end
