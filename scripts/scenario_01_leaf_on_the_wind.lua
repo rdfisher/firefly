@@ -57,19 +57,19 @@ end
 
 function init()
     local scale = 5000
-  
-    -- huge distance away:  players should never find it
-    local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(200 * scale, 100 * scale):setCallSign("APB")
-    wave = Wave:new(apb)
-    
-    cortex = Cortex:new(wave)
-    dispatcher = AllianceNavyDispatcher:new(cortex)
-    
     verse:generate(scale)
     
     playerX, playerY = verse.byName['persephone']:getPosition()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX + 100, playerY + 100)
     browncoatCaptain = Browncoat:new(browncoat)
+
+    -- huge distance away:  players should never find it
+    local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(200 * scale, 100 * scale):setCallSign("APB")
+    wave = Wave:new(apb)
+
+    cortex = Cortex:new(wave, browncoatCaptain)
+    dispatcher = AllianceNavyDispatcher:new(cortex)
+    
     
     stations = {
       verse.byName['cortex-relay-7'],
