@@ -62,7 +62,7 @@ function init()
     verse:generate(scale)
     
     playerX, playerY = verse.byName['persephone']:getPosition()
-    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX + 100, playerY + 100)
+    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX - 2000, playerY - 2000)
     browncoatCaptain = Browncoat:new(browncoat)
 
     -- huge distance away:  players should never find it
