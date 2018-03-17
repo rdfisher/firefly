@@ -266,15 +266,27 @@ function AllianceNavyCaptain:initObjectives()
         end
     }))
 
-    -- self.planPassiveScan:add(Objective:new({
-    --     name = "default",
-    --     interval = self.CRIME_SCANNER_DELAY,
-    --     update = function(captain)
-    --         if captain:distance(captain.ship, captain.cortex.browncoat.ship) < self.CRIME_SCANNER_RANGE then
-    --             self.cortex:reportSighting(delta, captain.cortex.browncoat.ship)
-    --         end
-    --     end
-    -- }))
+    self.planPassiveScan:add(Objective:new({
+        name = "default",
+        interval = self.CRIME_SCANNER_DELAY,
+        update = function(captain)
+            if captain:distance(captain.ship, captain.cortex.browncoat.ship) < captain.CRIME_SCANNER_RANGE then
+                captain.cortex:reportSighting(captain.cortex.browncoat.ship)
+            end
+        end
+    }))
+    self.planPassiveScan:add(Objective:new({
+        name = "browncoatSpotted",
+        interval = self.CRIME_SCANNER_DELAY,
+        enter = function(captain)
+            captain.cortex:reportSighting(captain.cortex.browncoat.ship)
+        end,
+        update = function(captain, delta)
+            if captain:distance(captain.ship, captain.cortex.browncoat.ship) > captain.CRIME_SCANNER_RANGE then
+                return "default"
+            end
+        end
+    }))
 end
 
 function AllianceNavyCaptain:update(delta)
@@ -283,5 +295,5 @@ function AllianceNavyCaptain:update(delta)
     end
 
     self.plan:update(self, delta)
-    --self.planPassiveScan:update(self, delta)
+    self.planPassiveScan:update(self, delta)
 end

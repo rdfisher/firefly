@@ -17,12 +17,12 @@
 
 ]]
 
-ObjectivePlan = {
-    objectives = {},
-    current = nil
-}
+ObjectivePlan = {}
 function ObjectivePlan:new()
-    local o = {}
+    local o = {
+        objectives = {},
+        current = nil
+    }
     setmetatable(o, self)
     self.__index = self
     return o
@@ -51,15 +51,16 @@ function ObjectivePlan:getIndexByName(name)
     end
 end
 
-Objective = {
-    timer = 0,
-    interval = false,
-    updateFunction = function() end,
-    time_spent_here = 0
-}
+Objective = {}
 function Objective:new(objective)
     --TODO: error out if any typos
-    local o = {}
+    local o = {
+        timer = 0,
+        interval = false,
+        time_spent_here = 0,
+        updateFunction = function() end,
+        enterFunction = function() end
+    }
     o.name = objective.name
     if objective.interval ~= nil then
         o.interval = objective.interval

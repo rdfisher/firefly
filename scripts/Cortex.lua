@@ -57,22 +57,17 @@ function Cortex:illegalActivity(spaceObject)
     self.rep_timer = 0
 end
 
-function Cortex:reportSighting(delta, target)
-    -- if self.last_sighting < self.SIGHTING_DELAY then
-    --     self.last_sighting = self.last_sighting + delta
-    -- else
-    --     self.last_sighting = 0
-        if target:getReputationPoints() < self.SIGHTING_REP_THRESHOLD then
-            -- reset timer
-            self.rep_timer = 0
-            -- add bulletin
-            local x, y = target:getPosition()
-            local sector = target:getSectorName()
-            local callsign = target:getCallSign()
-            self:broadcastAlert(string.format("[APB] Illegal activity involving %s reported in Sector %s", callsign, sector))
-            table.insert(self.entries, Bulletin:illegalActivity(callsign, sector, x, y))
-        end
-    -- end
+function Cortex:reportSighting(target)
+    if target:getReputationPoints() < self.SIGHTING_REP_THRESHOLD then
+        -- reset timer
+        self.rep_timer = 0
+        -- add bulletin
+        local x, y = target:getPosition()
+        local sector = target:getSectorName()
+        local callsign = target:getCallSign()
+        self:broadcastAlert(string.format("[APB] Illegal activity involving %s reported in Sector %s", callsign, sector))
+        table.insert(self.entries, Bulletin:illegalActivity(callsign, sector, x, y))
+    end
 end
 
 function Cortex:popLatestBulletin()

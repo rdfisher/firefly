@@ -100,7 +100,7 @@ end
 function TransportCaptain:reportIllegalSightings(delta, ships)
     for _, object in ipairs(ships) do
         if object:isValid() and object:getFaction() == "Browncoats" then
-            self.cortex:reportSighting(delta, object)
+            self.cortex:reportSighting(object)
         end
     end
 end
