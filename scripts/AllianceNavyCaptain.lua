@@ -7,7 +7,8 @@ AllianceNavyCaptain = {
     CRIME_SCANNER_DELAY = 10,
     CRIME_SCANNER_RANGE = 5000,
     ARREST_TIMEOUT = 10,
-    MAX_DISTANCE_AWAY_FROM_FLOCK = 5000
+    MAX_DISTANCE_AWAY_FROM_FLOCK = 5000,
+    ARREST_DISTANCE = 2000
 }
 
 function AllianceNavyCaptain:new()
@@ -143,6 +144,7 @@ function AllianceNavyCaptain:initObjectives()
         end,
         update = function(captain)
             -- Stop flying blind once we are inside flock radius
+            local x, y = captain.target:getPosition()
             if captain:distance(captain.ship, x, y) < captain.target:getRadius() then
                 return "default"
             end
@@ -172,9 +174,9 @@ function AllianceNavyCaptain:initObjectives()
             if captain:distance(captain.ship, x, y) < 5000 then
                 return "roam"
             end
-            local x, y = captain.target:getPosition()
             -- Check if we are too far from out flock
-            if captain:distance(captain.ship, x, y) > captain.target:getRadius() + captain.MAX_DISTANCE_AWAY_FROM_FLOCK then
+            local x, y = captain.target:getPosition()
+            if captain:distance(captain.ship, x, y) > (captain.target:getRadius() + captain.MAX_DISTANCE_AWAY_FROM_FLOCK) then
                 return "returnToFlock"
             end
         end
@@ -199,7 +201,8 @@ function AllianceNavyCaptain:initObjectives()
             end
 
             -- Check if we are too far from out flock
-            if captain:distance(captain.ship, x, y) > captain.target:getRadius() + captain.MAX_DISTANCE_AWAY_FROM_FLOCK then
+            local x, y = captain.target:getPosition()
+            if captain:distance(captain.ship, x, y) > (captain.target:getRadius() + captain.MAX_DISTANCE_AWAY_FROM_FLOCK) then
                 return "returnToFlock"
             end
         end

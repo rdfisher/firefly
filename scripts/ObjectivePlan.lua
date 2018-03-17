@@ -39,6 +39,7 @@ function ObjectivePlan:update(captain, delta)
     local next = obj:update(captain, delta)
     if next ~= nil then
         self.current = self:getIndexByName(next)
+        print(string.format("Ship %s switching to Objective %s", captain.ship:getCallSign(), self.objectives[self.current].name))
         self.objectives[self.current]:enter(captain)
     end
 end
@@ -64,7 +65,7 @@ function Objective:new(objective)
         o.interval = objective.interval
     end
     o.enterFunction = objective.enter
-    if objective.updateFunction ~= nil then
+    if objective.update ~= nil then
         o.updateFunction = objective.update
     end
     setmetatable(o, self)
@@ -72,7 +73,7 @@ function Objective:new(objective)
     return o
 end
 function Objective:update(captain, delta)
-    self.time_spent_here = self.time_spent_here + delta
+    --self.time_spent_here = self.time_spent_here + delta
     -- if self.interval ~= false and self.timer < self.interval then
     --     self.timer = self.timer + delta
     -- else
