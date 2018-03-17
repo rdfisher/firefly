@@ -26,8 +26,15 @@ end
 
 function ReaverSwarm:update(delta)
   if (#self.reavers < self.size) then
+    
+    local r = random(0, 360)
+    local distance = random(0, self.radius)
+    x0 = self.originX + math.cos(r / 180 * math.pi) * distance
+    y0 = self.originY + math.sin(r / 180 * math.pi) * distance
+    
     local x, y = self:getDestination()
-    local reaver = CpuShip():setTemplate("Phobos T3"):setFaction("Reavers"):setPosition(self.originX, self.originY):orderFlyTowardsBlind(x, y)
+    local reaver = CpuShip():setTemplate("Phobos T3"):setFaction("Reavers"):setPosition(x0, y0):orderFlyTowards(x, y)
+    reaver:setWarpDrive(true)
     table.insert(self.reavers, reaver)
     table.insert(self.delays, 0)
   end

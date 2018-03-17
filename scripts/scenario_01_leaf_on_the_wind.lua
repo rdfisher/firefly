@@ -56,7 +56,7 @@ end
 
 
 function init()
-    local scale = 5000
+    local scale = 20000
     verse:generate(scale)
     
     playerX, playerY = verse.byName['persephone']:getPosition()
@@ -149,10 +149,10 @@ function init()
     print (verse.byName["burnham"]:getFaction())
 
     local swarm1X, swarm1Y = verse.byName["burnham"]:getPosition()
-    swarm1 = ReaverSwarm:new(swarm1X, swarm1Y, scale * 2, 10)
+    swarm1 = ReaverSwarm:new(scale * -15, 0, scale * 5, 100)
 
     local swarm2X, swarm2Y = verse.byName["kalidasa"]:getPosition()
-    swarm2 = ReaverSwarm:new(swarm2X, swarm2Y, scale * 2, 10)
+    swarm2 = ReaverSwarm:new(scale * 15, 0, scale * 5, 100)
 
     -- Temporary function to test finding probes
     addGMFunction("Find Probes", function()
