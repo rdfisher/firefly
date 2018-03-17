@@ -9,7 +9,7 @@ function Browncoat:new(ship)
     o.ship = ship
     setmetatable(o, self)
     self.__index = self
-    ship:setReputationPoints(10)
+    ship:setReputationPoints(1000)
     return o
 end
 
