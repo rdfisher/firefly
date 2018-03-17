@@ -65,7 +65,9 @@ function Objective:new(objective)
     if objective.interval ~= nil then
         o.interval = objective.interval
     end
-    o.enterFunction = objective.enter
+    if objective.enterFunction ~= nil then
+        o.enterFunction = objective.enter
+    end
     if objective.update ~= nil then
         o.updateFunction = objective.update
     end
@@ -74,7 +76,7 @@ function Objective:new(objective)
     return o
 end
 function Objective:update(captain, delta)
-    --self.time_spent_here = self.time_spent_here + delta
+    self.time_spent_here = self.time_spent_here + delta
     -- if self.interval ~= false and self.timer < self.interval then
     --     self.timer = self.timer + delta
     -- else
