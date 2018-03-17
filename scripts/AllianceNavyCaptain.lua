@@ -8,7 +8,8 @@ AllianceNavyCaptain = {
     CRIME_SCANNER_RANGE = 5000,
     ARREST_TIMEOUT = 10,
     MAX_DISTANCE_AWAY_FROM_FLOCK = 5000,
-    ARREST_DISTANCE = 2000
+    ARREST_DISTANCE = 2000,
+    SEARCH_DELAY = 10
 }
 
 function AllianceNavyCaptain:new()
@@ -282,5 +283,5 @@ function AllianceNavyCaptain:update(delta)
     end
 
     self.plan:update(self, delta)
-    self.planPassiveScan:update(self, delta)
+    --self.planPassiveScan:update(self, delta)
 end
