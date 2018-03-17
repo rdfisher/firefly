@@ -247,6 +247,9 @@ function AllianceNavyCaptain:initObjectives()
             end
             if delta > captain.SEARCH_DELAY then
                 captain.cortex.browncoat:shipSearched(captain)
+                captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
+                    Everything seems to be in order. Be on your way.
+                ]])
                 return "default"
             end
         end

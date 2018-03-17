@@ -1,25 +1,25 @@
-Badger = {
+Niska = {
   missionInProgress = nil,
   availableMission = nil,
   browncoat = {},
   homeStation = {},
-  locations = {},
+  transportCaptains = {},
   cortex = {},
-  accumulatedTime = 240 --ensure a mission is generated soon after the game starts
+  accumulatedTime = 280 --ensure a mission is generated soon after the game starts
 }
 
-function Badger:new (browncoat, homeStation, locations, cortex)
+function Niska:new (browncoat, homeStation, transportCaptains, cortex)
   local o = {}
   o.browncoat = browncoat
   o.homeStation = homeStation
-  o.locations = locations
+  o.transportCaptains = transportCaptains
   o.cortex = cortex
   setmetatable(o, self)
   self.__index = self
   return o
 end
 
-function Badger:update(delta)
+function Niska:update(delta)
   if (type(self.missionInProgress) == "nil") and (type(self.availableMission) == "nil") then
     self.accumulatedTime = self.accumulatedTime + delta
   end
@@ -29,7 +29,7 @@ function Badger:update(delta)
     self.homeStation:sendCommsMessage(
       self.browncoat.ship,
       string.format(
-        "Badger: I have a job for you. Contact me at %s (sector %s)",   
+        "Niska: Call me. Now. %s (sector %s)",   
         self.homeStation:getCallSign(), 
         self.homeStation:getSectorName()
       )
@@ -40,49 +40,41 @@ function Badger:update(delta)
   end
 end
 
-function Badger:generateMission()
-  local originIndex = math.random(1, #self.locations)
-  local destinationIndex = 0
-  
-  while (destinationIndex == 0) or (destinationIndex == originIndex) do
-    destinationIndex = math.random(1, #self.locations)
-  end
-  
-  local originStation = self.locations[originIndex]
-  local destinationStation = self.locations[destinationIndex]
-    
-  local mission = DeliverMission:new("Badger", self.homeStation, originStation, destinationStation, self.cortex)
+function Niska:generateMission()
+  local transportCaptainIndex = math.random(1, #self.transportCaptains)
+  local transportCaptain = self.transportCaptains[transportCaptainIndex]
+  local mission = RobFreighterMission:new("Niska", self.homeStation, transportCaptain, self.cortex)
   mission:setGiver(self)
   return mission
 end
 
-function Badger:isMissionAvailable()
+function Niska:isMissionAvailable()
   if type(self.availableMission) == "nil" then
     return false
   end
   return true
 end
 
-function Badger:getAvailableMission()
+function Niska:getAvailableMission()
   return self.availableMission
 end
 
-function Badger:isMissionInProgress()
+function Niska:isMissionInProgress()
   if type(self.missionInProgress) == "nil" then
     return false
   end
   return true
 end
 
-function Badger:getMissionInProgress()
+function Niska:getMissionInProgress()
   return self.missionInProgress
 end
 
-function Badger:missionCompleted(mission, success)
+function Niska:missionCompleted(mission, success)
   self.missionInProgress = nil
 end
 
-function Badger:acceptMission(mission)
+function Niska:acceptMission(mission)
   self.missionInProgress = mission
   self.availableMission = nil
 end

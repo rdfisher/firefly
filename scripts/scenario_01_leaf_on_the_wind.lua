@@ -26,6 +26,8 @@ require("Wave.lua")
 require("Browncoat.lua")
 require("DeliverMission.lua")
 require("Badger.lua")
+require("RobFreighterMission.lua")
+require("Niska.lua")
 
 civilians = {}
 stations = {}
@@ -146,7 +148,33 @@ function init()
         dispatcher:addNavyShip(captain)
     end
 
-    print (verse.byName["burnham"]:getFaction())
+    niska = Niska:new(
+      browncoatCaptain,
+      verse.byName['ezra'],
+      transportCaptains,
+      cortex
+    )
+    
+    stations[2]:setCommsScript(""):setCommsFunction(function()
+      if comms_source:getFaction() == "Alliance Navy" then
+        return
+      end
+        
+      if niska:isMissionInProgress() then
+        setCommsMessage("Niska: Don't contact me until it's done")
+        return
+      end
+        
+      if niska:isMissionAvailable() then
+        local niskaMission = niska:getAvailableMission()
+        setCommsMessage(niskaMission:getObjective())
+        browncoatCaptain:acceptMission(niskaMission)
+        niska:acceptMission(niskaMission)
+      else
+        setCommsMessage("Niska: Do you know the writings of Shan Yu?")
+      end
+    end)
+
 
     local swarm1X, swarm1Y = verse.byName["burnham"]:getPosition()
     swarm1 = ReaverSwarm:new(scale * -15, 0, scale * 5, 100)
@@ -189,6 +217,7 @@ function update(delta)
     swarm2:update(delta)
     browncoatCaptain:update(delta)
     badger:update(delta)
+    niska:update(delta)
     -- Update all captains
     for _, captains in ipairs({navyCaptains, transportCaptains}) do
         for i, captain in ipairs(captains) do

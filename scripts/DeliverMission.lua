@@ -82,9 +82,9 @@ function DeliverMission:update(delta)
         self.giverName
       )
     )
-    self.browncoat:completeMission(self)
+    self.browncoat:completeMission(self, true)
     if type(self.giver) ~= "nil" then
-      self.giver:missionCompleted(self)
+      self.giver:missionCompleted(self, true)
     end
     self.state = self.STATE_DONE
   end
