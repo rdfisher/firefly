@@ -73,12 +73,12 @@ function Objective:new(objective)
 end
 function Objective:update(captain, delta)
     self.time_spent_here = self.time_spent_here + delta
-    if self.interval ~= false and self.timer < self.interval then
-        self.timer = self.timer + delta
-    else
-        self.timer = 0
+    -- if self.interval ~= false and self.timer < self.interval then
+    --     self.timer = self.timer + delta
+    -- else
+    --     self.timer = 0
         return self.updateFunction(captain, self.time_spent_here)
-    end
+    -- end
 end
 function Objective:enter(captain)
     self.time_spent_here = 0
