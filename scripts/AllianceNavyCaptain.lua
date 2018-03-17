@@ -126,7 +126,7 @@ function AllianceNavyCaptain:update(delta)
         local criminals = self:scanRangeForCriminals(self.CRIME_SCANNER_RANGE)
         for _, criminal in ipairs(criminals) do
             -- Report them to the cortex
-            self.cortex:reportIllegalSightings(delta, criminal)
+            self.cortex:reportSighting(delta, criminal)
         end
     end
 
