@@ -31,11 +31,15 @@ function ObjectivePlan:add(objective)
     table.insert(self.objectives, objective)
 end
 function ObjectivePlan:update(captain, delta)
-    local obj = self:getCurrentObjective()
+    if self.current == nil then
+        self.current = self:getIndexByName("default")
+        self.objectives[self.current]:enter(captain)
+    end
+    local obj = self.objectives[self.current]
     local next = obj:update(captain, delta)
     if next ~= nil then
         self.current = self:getIndexByName(next)
-        self:getCurrentObjective():enter(captain)
+        self.objectives[self.current]:enter(captain)
     end
 end
 function ObjectivePlan:getIndexByName(name)
@@ -44,12 +48,6 @@ function ObjectivePlan:getIndexByName(name)
             return i
         end
     end
-end
-function ObjectivePlan:getCurrentObjective()
-    if self.current == nil then
-        self.current = self:getIndexByName("default")
-    end
-    return self.objectives[self.current]
 end
 
 Objective = {

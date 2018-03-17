@@ -25,7 +25,7 @@ function AllianceNavyCaptain:new()
     }
     setmetatable(o, self)
     self.__index = self
-    self:initObjectives()
+    AllianceNavyCaptain.initObjectives(o)
     return o
 end
 
