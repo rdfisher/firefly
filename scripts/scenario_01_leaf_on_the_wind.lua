@@ -35,7 +35,8 @@ navyCaptains = {}
 transportCaptains = {}
 
 -- the whole gorram 'verse
-verse = Verse:new()
+scale = 10000
+verse = Verse:new(scale)
 
 -- characters
 function MrUniverse()
@@ -58,8 +59,8 @@ end
 
 
 function init()
-    local scale = 10000
-    verse:generate(scale)
+
+    verse:generate()
     
     playerX, playerY = verse.byName['persephone']:getPosition()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX - 2000, playerY - 2000)
@@ -118,7 +119,7 @@ function init()
     end)
 
     -- Create civilian groups
-    local verseX, verseY = verse:getCentre(scale)
+    local verseX, verseY = verse:getCentre()
     for i=1,4 do
         local group = CivilianGroup:new(verseX, verseY)
         table.insert(civilians, group)
@@ -137,10 +138,11 @@ function init()
     -- rebalance groups
     CivilianGroup:balance(civilians)
     -- Add Navy escorts
-    for _,group in ipairs(civilians) do
+    for i,group in ipairs(civilians) do
         local x, y = group:getPosition()
         escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
         escort:setWarpDrive(true):setJumpDrive(true):setJumpDriveRange(0,10000000)
+        escort:setCallSign("IAV" .. i)
         local captain = AllianceNavyCaptain:new()
         captain:assignShip(escort)
         captain:assignTarget(group)

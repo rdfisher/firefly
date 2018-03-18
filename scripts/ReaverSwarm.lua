@@ -20,11 +20,21 @@ function ReaverSwarm:new(originX, originY, radius, size)
   }
   setmetatable(o, self)
   self.__index = self
+
+  --minefield on the border
+  local mineSpacing = math.ceil((1 * radius) / size)
+  local borderX = originX + radius
+  if originX > 0 then
+    borderX = originX - radius
+  end
+  
+  createObjectsOnLine(borderX, originY - (2 * radius), borderX, originY + (2 * radius), mineSpacing, Mine, 1, 100, math.ceil(radius / 4))
+  
   return o
 end
 
 
-function ReaverSwarm:update(delta)
+function ReaverSwarm:update(delta)  
   if (#self.reavers < self.size) then
     
     local r = random(0, 360)

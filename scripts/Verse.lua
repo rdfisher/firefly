@@ -1,17 +1,28 @@
-Verse = {stations = {}, byName = {}}
+require("utils.lua")
 
-function Verse:new()
-  local o = {stations = {}, byName = {}}
+Verse = {stations = {}, byName = {}, scale = 1000}
+
+function Verse:new(scale)
+  local o = {stations = {}, byName = {}, scale = scale}
   setmetatable(o, self)
   self.__index = self
   return o
 end
 
-function Verse:getCentre(scale)
-  return (12.5 * scale), (5 * scale)
+function Verse:getCentre()
+  return (12.5 * self.scale), (5 * self.scale)
 end
 
-function Verse:generate(scale)
+function Verse:generate()
+  local scale = self.scale
+  local function grids(n, scale)
+    local ratio = scale / 20000 -- account for constant in placeRandomObjects
+    return math.ceil(n * ratio)
+  end
+  
+  --placeRandomObjects(Asteroid, 30, 0.3, 10*scale, 20*scale, grids(40, scale), grids(10, scale))
+  --placeRandomObjects(VisualAsteroid, 30, 0.3, 10*scale, 20*scale, grids(40, scale), grids(10, scale))
+  
   -- overall dimensions: 25x 10y
   
   -- stars
@@ -71,6 +82,16 @@ function Verse:generate(scale)
     self.byName['silverhold'] = SpaceStation():setTemplate("Medium Station"):setFaction("neutral"):setCanBeDestroyed(false):setPosition(15.2 * scale, 9.5 * scale):setCallSign("silverhold")
     
   -- asteroids
+  centreX, centreY = self:getCentre(scale)
+  placeRandomAroundPoint(Asteroid, math.ceil(scale / 30), scale * 5, scale * 10, centreX, centreY)
+  placeRandomAroundPoint(VisualAsteroid, math.ceil(scale / 10), scale * 5, scale * 20, centreX, centreY)
+  
+  placeRandomAroundPoint(Asteroid, math.ceil(scale / 20), scale * 10, scale * 20, centreX, centreY)
+  placeRandomAroundPoint(VisualAsteroid, math.ceil(scale / 10), scale * 5, scale * 20, centreX, centreY)
+  
+  placeRandomAroundPoint(Asteroid, math.ceil(scale / 200), scale, scale * 5, centreX, centreY)
+  placeRandomAroundPoint(VisualAsteroid, math.ceil(scale / 100), scale, scale * 5, centreX, centreY)
+  
 end
 
 function Verse:getStations()
