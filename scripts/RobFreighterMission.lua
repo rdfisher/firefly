@@ -81,6 +81,7 @@ function RobFreighterMission:update(delta)
         self.giverName
       )
     )
+    self.targetFreighterCaptain:setIsMissionTarget(true)
     self.state = self.STATE_FIGHT
     return 
   end
@@ -97,7 +98,7 @@ function RobFreighterMission:update(delta)
     return 
   end
 
-  if (self.state == self.STATE_FIGHT) and (not self.targetFreighterCaptain.ordered) then
+  if (self.state == self.STATE_FIGHT) and (self.targetFreighterCaptain.surrendered) then
     self.cortex:illegalActivity(self.targetFreighterCaptain.ship)
     self.giverHome:sendCommsMessage(
       self.browncoat.ship, 
@@ -108,6 +109,7 @@ function RobFreighterMission:update(delta)
       self.giverHome:getSectorName()   
       )
     )
+    self.targetFreighterCaptain:setIsMissionTarget(false)
     self.state = self.STATE_HEADING_TO_DROP_OFF_POINT
   end
 

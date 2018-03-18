@@ -14,7 +14,8 @@ function TransportCaptain:new()
         red_alert_timer = 0,
         red_alert = false,
         sighting_timer = 0,
-
+        surrendered = false,
+        isMissionTarget = false,
         SIGHTING_DELAY = 3,
         SCANNER_RANGE = 30000,
         DOCK_TIMEOUT = 10.0,
@@ -113,9 +114,29 @@ function TransportCaptain:reportEnemySightings(ships)
     end
 end
 
+function TransportCaptain:setIsMissionTarget(isMissionTarget)
+  self.isMissionTarget = isMissionTarget
+  if (isMissionTarget) then
+    self.ship:setFaction("Independent ")
+  else
+    self.ship:setFaction("Independent")
+  end
+end
+
 function TransportCaptain:update(delta)
     if not self.ship:isValid() then
         return
+    end
+
+    if self.isMissionTarget then
+      if self:getIntegrity() < self.SURRENDER_DAMAGE_THRESHOLD then
+        self.ship:orderIdle()
+        self.surrendered = true
+      else
+        self.ship:orderRoaming()
+        self.surrendered = false
+      end
+      return
     end
 
     -- Scanning delay

@@ -2,10 +2,13 @@ neutral = FactionInfo():setName("neutral")
 neutral:setGMColor(128, 128, 128)
 neutral:setDescription([[Inanimate things]])
 
-
 independentFaction = FactionInfo():setName("Independent")
 independentFaction:setGMColor(128, 128, 128)
 independentFaction:setDescription([[Despite appearing as a faction, independents are distinguished primarily by having no strong affiliation with any  at all. Most traders consider themselves independent, though certain voices have started to speak up about creating a merchant faction.]])
+
+independentTargetFaction = FactionInfo():setName("Independent ")
+independentTargetFaction:setGMColor(128, 128, 128)
+independentTargetFaction:setDescription([[Despite appearing as a faction, independents are distinguished primarily by having no strong affiliation with any  at all. Most traders consider themselves independent, though certain voices have started to speak up about creating a merchant faction.]])
 
 browncoatFaction = FactionInfo():setName("Browncoats")
 browncoatFaction:setGMColor(255, 255, 255)
@@ -14,6 +17,7 @@ Each of the outer worlds had its own form of government.
 They'd never really worked together except to do one thing - deliver the mail.
 Out on the frontier, folk liked to keep to themselves, dealing with their own trouble in their own way.
 On the Border planets, it could be dangerous to stick a gun barrel in someone's face because often as not 3 more could be pointing back at you.]])
+browncoatFaction:setEnemy(independentTargetFaction)
 
 allianceFaction = FactionInfo():setName("Alliance Navy")
 allianceFaction:setGMColor(0, 128, 255)
