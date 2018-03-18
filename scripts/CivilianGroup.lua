@@ -1,5 +1,7 @@
 CivilianGroup = {
-  civilians = {}
+  civilians = {},
+  defaultX = 0,
+  defaultY = 0
 }
 
 function CivilianGroup:cost(a, b)
@@ -58,8 +60,10 @@ function CivilianGroup:distance(a, b, c, d)
     return math.sqrt(xd * xd + yd * yd)
 end
 
-function CivilianGroup:new ()
-  local o = {civilians = {}}
+function CivilianGroup:new (defaultX, defaultY)
+  local o = {civilians = {}, defaultX = 0, defaultY = 0}
+  o.defaultX = defaultX
+  o.defaultY = defaultY
   setmetatable(o, self)
   self.__index = self
   return o
@@ -91,7 +95,7 @@ end
 function CivilianGroup:getPosition()
   local numberOfCivilians = #self.civilians
   if numberOfCivilians == 0 then
-    return 0, 0
+    return self.defaultX, self.defaultY
   end
   local xTotal = 0;
   local yTotal = 0;

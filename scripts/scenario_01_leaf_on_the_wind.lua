@@ -58,15 +58,16 @@ end
 
 
 function init()
-    local scale = 20000
+    local scale = 10000
     verse:generate(scale)
     
     playerX, playerY = verse.byName['persephone']:getPosition()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX - 2000, playerY - 2000)
+    browncoat:setCallSign("Serenity")
     browncoatCaptain = Browncoat:new(browncoat)
 
     -- huge distance away:  players should never find it
-    local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(200 * scale, 100 * scale):setCallSign("APB")
+    local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(-200 * scale, -100 * scale):setCallSign("APB")
     wave = Wave:new(apb)
 
     cortex = Cortex:new(wave, browncoatCaptain)
@@ -117,15 +118,15 @@ function init()
     end)
 
     -- Create civilian groups
+    local verseX, verseY = verse:getCentre(scale)
     for i=1,4 do
-        local group = CivilianGroup:new()
+        local group = CivilianGroup:new(verseX, verseY)
         table.insert(civilians, group)
     end
     -- add transports to one group
     local group = civilians[1]
     for c=1,40 do
-        local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(-6 * scale, 6 * scale), random(-5 * scale, 5 * scale))
-        ship:setWarpDrive(true)
+        local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(6.5 * scale, 18.5 * scale), random(0, 10 * scale))
         group:add(ship)
         local captain = TransportCaptain:new()
         captain:assignShip(ship)
@@ -177,21 +178,10 @@ function init()
 
 
     local swarm1X, swarm1Y = verse.byName["burnham"]:getPosition()
-    swarm1 = ReaverSwarm:new(scale * -15, 0, scale * 5, 100)
+    swarm1 = ReaverSwarm:new(scale * -2.5, scale * 5, scale * 5, 30)
 
     local swarm2X, swarm2Y = verse.byName["kalidasa"]:getPosition()
-    swarm2 = ReaverSwarm:new(scale * 15, 0, scale * 5, 100)
-
-    -- Temporary function to test finding probes
-    addGMFunction("Find Probes", function()
-        local probes = findProbes()
-        for _,v in ipairs(probes) do
-            if v:isValid() then
-                local x, y = v:getPosition()
-                print(string.format("Probe location: %f, %f", x, y))
-            end
-        end
-    end)
+    swarm2 = ReaverSwarm:new(scale * 27.5, scale * 5, scale * 5, 30)
 end
 
 local balance = 0
@@ -205,11 +195,6 @@ function update(delta)
                 break;
             end
         end
-        -- print("Civilian group rebalance in progress")
-        -- for i, v in ipairs(civilians) do
-        --     local x, y = v:getPosition()
-        --     print(string.format("Cluster %d centroid position X: %f, Y: %f, size %d, radius %f", i, x, y, v:getSize(), v:getRadius()))
-        -- end
     end
     cortex:update(delta)
     dispatcher:update(delta)
@@ -228,16 +213,4 @@ function update(delta)
             end
         end
     end
-end
-
-function findProbes()
-    list = {}
-    for _, probe in ipairs(getAllObjects()) do
-        if probe.typeName == "ScanProbe" then
-            if probe:getPosition() == probe:getTarget() then
-                table.insert(list, probe)
-            end
-        end
-    end
-    return list
 end
