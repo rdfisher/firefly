@@ -8,7 +8,8 @@ ReaverSwarm = {
   size = 1,
   delays = {},
   callsignStart = "RV",
-  callsignIndex = 1
+  callsignIndex = 1,
+  borderX = 0
 }
 
 function ReaverSwarm:new(originX, originY, radius, size, callsignStart)
@@ -31,12 +32,15 @@ function ReaverSwarm:new(originX, originY, radius, size, callsignStart)
   if originX > 0 then
     borderX = originX - radius
   end
-  
+  self.borderX = borderX
   createObjectsOnLine(borderX, originY - (2 * radius), borderX, originY + (2 * radius), mineSpacing, Mine, 1, 100, math.ceil(radius / 4))
-  
   return o
 end
 
+function ReaverSwarm:getRandomBorderPoint()
+  local borderY = (math.random(1, self.radius) + self.originY) - (self.radius / 2)
+  return self.borderX, borderY
+end
 
 function ReaverSwarm:update(delta)  
   if (#self.reavers < self.size) then

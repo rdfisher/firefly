@@ -42,7 +42,8 @@ require("DeliverMission.lua")
 require("Badger.lua")
 require("RobFreighterMission.lua")
 require("Niska.lua")
-
+require("RescueMission.lua")
+require("APB.lua")
 civilians = {}
 stations = {}
 navyCaptains = {}
@@ -198,12 +199,13 @@ function init()
       end
     end)
 
-
     local swarm1X, swarm1Y = verse.byName["burnham"]:getPosition()
     swarm1 = ReaverSwarm:new(scale * -2.5, scale * 5, scale * 5, 30, "RVA")
 
     local swarm2X, swarm2Y = verse.byName["kalidasa"]:getPosition()
     swarm2 = ReaverSwarm:new(scale * 27.5, scale * 5, scale * 5, 30, "RVB")
+    
+    cortexApb = APB:new (browncoatCaptain, apb, {swarm1, swarm2}, cortex)
 end
 
 local balance = 0
@@ -225,6 +227,8 @@ function update(delta)
     browncoatCaptain:update(delta)
     badger:update(delta)
     niska:update(delta)
+    cortexApb:update(delta)
+    
     -- Update all captains
     for _, captains in ipairs({navyCaptains, transportCaptains}) do
         for i, captain in ipairs(captains) do
