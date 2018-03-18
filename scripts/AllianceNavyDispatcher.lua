@@ -33,13 +33,14 @@ function AllianceNavyDispatcher:update(delta)
     end
 
     -- If this is a distress call, get to the navy ship in charge
-    if bulletin.t == "distressCall" then
-        local ship = self:findResponsibleShip(bulletin.callsign)
-        if ship ~= nil then
-            ship:investigate(bulletin)
-            return
-        end
-    end
+    -- TODO: Doesn't work, as the charges move between groups dynamically
+    -- if bulletin.t == "distressCall" then
+    --     local ship = self:findResponsibleShip(bulletin.callsign)
+    --     if ship ~= nil then
+    --         ship:investigate(bulletin)
+    --         return
+    --     end
+    -- end
 
     -- Find the closest ship
     local ship = self:findClosestShip(bulletin.x, bulletin.y)
