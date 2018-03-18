@@ -14,8 +14,19 @@ function Browncoat:new(ship)
 end
 
 function Browncoat:update(delta) 
+  --remove all waypoints
+  local numberOfWaypoints = self.ship:getWaypointCount()
+  
+  if (numberOfWaypoints > 0) then
+    for i=1,numberOfWaypoints do
+      self.ship:commandRemoveWaypoint(i)
+    end
+  end
+  
   for _, mission in ipairs(self.missions) do
     mission:update(delta)
+    local x, y = mission:getWaypoint()
+    self.ship:commandAddWaypoint(x, y)
   end
 end
 

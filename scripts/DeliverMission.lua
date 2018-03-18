@@ -96,3 +96,17 @@ function DeliverMission:shipSearched(cruiserCaptain)
     victory(cruiserCaptain.ship:getFaction())
   end
 end
+
+function DeliverMission:getWaypoint()
+  if self.state == self.STATE_HEADING_TO_ORIGIN then
+    local x, y = self.originStation:getPosition()
+    return x,y
+  end
+  if self.state == self.STATE_HEADING_TO_DESTINATION then
+    local x, y = self.destinationStation:getPosition()
+    return x,y
+  end
+  
+  local x, y = self.giverHome:getPosition()
+  return x, y
+end

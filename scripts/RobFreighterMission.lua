@@ -135,3 +135,13 @@ function RobFreighterMission:shipSearched(cruiserCaptain)
     victory(cruiserCaptain.ship:getFaction())
   end
 end
+
+function RobFreighterMission:getWaypoint()
+  if self.state == self.STATE_HEADING_TO_DROP_OFF_POINT then
+    local x, y = self.giverHome:getPosition()
+    return x,y
+  end
+  
+  local x, y = self.targetFreighterCaptain.ship:getPosition()
+  return x, y
+end
