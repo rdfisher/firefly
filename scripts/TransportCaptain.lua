@@ -19,7 +19,7 @@ function TransportCaptain:new()
         SIGHTING_DELAY = 3,
         SCANNER_RANGE = 30000,
         DOCK_TIMEOUT = 10.0,
-        SURRENDER_DAMAGE_THRESHOLD = 0.5,
+        SURRENDER_DAMAGE_THRESHOLD = 0.55,
         RED_ALERT_CANCEL_TIMEOUT = 10
     }
     setmetatable(o, self)
@@ -73,13 +73,12 @@ end
 function TransportCaptain:getIntegrity()
     local hull = self.ship:getHull() / self.ship:getHullMax()
 
-    local shield = 0.0;
+    local shield = 1;
     for s=0,self.ship:getShieldCount()-1 do
-        shield = shield + (self.ship:getShieldLevel(s) / self.ship:getShieldMax(s))
+        shield = math.min(shield, self.ship:getShieldLevel(s) / self.ship:getShieldMax(s))
     end
-    shield = shield / self.ship:getShieldCount()
 
-    local integrity = (hull + shield / 2.0)
+    local integrity = (hull + shield) / 2.0
     return integrity
 end
 
@@ -179,6 +178,7 @@ function TransportCaptain:update(delta)
     if self.ordered and self.integrity <= self.SURRENDER_DAMAGE_THRESHOLD then
         self.ship:orderIdle()
         self.ordered = false
+        print(string.format("Ship %s surrendering, don't shoot", self.ship:getCallSign()))
     end
     -- TODO: Signal attacker for some role play
 
