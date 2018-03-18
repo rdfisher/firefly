@@ -327,7 +327,7 @@ function AllianceNavyCaptain:initObjectives()
             -- Order ship to browncoat's last known position
             local x, y = captain.cortex.browncoat.ship:getPosition()
             captain.ship:orderFlyTowardsBlind(x, y)
-            state.lastKnownPosition = {x, y}
+            state.lastKnownPosition = {x=x, y=y}
         end,
         update = function(captain, delta, state)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
