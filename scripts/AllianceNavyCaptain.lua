@@ -2,10 +2,8 @@ require("ObjectivePlan.lua")
 
 AllianceNavyCaptain = {
     MISSION_ROAM_TIMEOUT = 10,
-    ROAM_SCANNER_RANGE = 10000,
     ILLEGAL_REP_THRESHOLD = 300,
     CRIME_SCANNER_DELAY = 10,
-    CRIME_SCANNER_RANGE = 10000,
     ARREST_TIMEOUT = 60, -- wait 1 minute for engines to stop
     MAX_DISTANCE_AWAY_FROM_FLOCK = 30000,
     ARREST_DISTANCE = 5000,
@@ -24,6 +22,7 @@ function AllianceNavyCaptain:new()
         target = {},
         bulletins = {},
         cortex = nil,
+        sensor = {},
         investigation = false,
         mission_timer = 0,
         mission_progress = 1,
@@ -207,7 +206,7 @@ function AllianceNavyCaptain:initObjectives()
         end,
         update = function(captain, delta)
             -- Prioritise killing enemies (including player enemy faction)
-            if captain.ship:areEnemiesInRange(captain.ROAM_SCANNER_RANGE) then
+            if captain.ship:areEnemiesInRange(captain.sensor:getRange()) then
                 -- Check if we are too far from out flock
                 local x, y = captain.target:getPosition()
                 if captain:distance(captain.ship, x, y) > (captain.target:getRadius() + captain.MAX_DISTANCE_AWAY_FROM_FLOCK) then
@@ -244,7 +243,7 @@ function AllianceNavyCaptain:initObjectives()
         update = function(captain, delta)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
             -- If we have lost them on scanner
-            if distance > captain.ROAM_SCANNER_RANGE then
+            if distance > captain.sensor:getRange() then
                 return "searchForSuspect"
             end
             -- if the ship slows down, approach them
@@ -284,7 +283,7 @@ function AllianceNavyCaptain:initObjectives()
         end,
         update = function(captain, delta, state)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
-            if distance < captain.CRIME_SCANNER_RANGE then
+            if distance < captain.sensor:getRange() then
                 -- Browncoat is found, resume attack
                 captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                     Contact re-established, resuming pursuit...
@@ -346,7 +345,7 @@ function AllianceNavyCaptain:initObjectives()
         end,
         update = function(captain, delta)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
-            if distance > captain.CRIME_SCANNER_RANGE then
+            if distance > captain.sensor:getRange() then
                 captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                     Contact lost, moving to last known position...
                 ]])
@@ -366,7 +365,7 @@ function AllianceNavyCaptain:initObjectives()
         end,
         update = function(captain, delta, state)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
-            if distance < captain.CRIME_SCANNER_RANGE then
+            if distance < captain.sensor:getRange() then
                 -- Browncoat is found, resume attack
                 captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                     Contact re-established, resuming pursuit...
@@ -392,7 +391,7 @@ function AllianceNavyCaptain:initObjectives()
         name = "default",
         interval = self.CRIME_SCANNER_DELAY,
         update = function(captain)
-            if captain:distance(captain.ship, captain.cortex.browncoat.ship) < captain.CRIME_SCANNER_RANGE then
+            if captain:distance(captain.ship, captain.cortex.browncoat.ship) < captain.sensor:getRange() then
                 captain.cortex:reportSighting(captain.cortex.browncoat.ship)
             end
         end
@@ -404,7 +403,7 @@ function AllianceNavyCaptain:initObjectives()
             captain.cortex:reportSighting(captain.cortex.browncoat.ship)
         end,
         update = function(captain, delta)
-            if captain:distance(captain.ship, captain.cortex.browncoat.ship) > captain.CRIME_SCANNER_RANGE then
+            if captain:distance(captain.ship, captain.cortex.browncoat.ship) > captain.sensor:getRange() then
                 return "default"
             end
         end

@@ -25,8 +25,6 @@ After a while they end up heading very ridgdily to their next objectives,
 forming weird straight line convoys. It doesn't look too good, but not sure what
 we can do. It would be nice for them to pick slighly odd paths, or add many more
 stations.
-
-
 ]]
 
 require("Verse.lua")
@@ -44,6 +42,8 @@ require("RobFreighterMission.lua")
 require("Niska.lua")
 require("RescueMission.lua")
 require("APB.lua")
+require("Sensor.lua")
+
 civilians = {}
 stations = {}
 navyCaptains = {}
@@ -83,7 +83,7 @@ function init()
     browncoat:setWarpDrive(false)
     browncoat:setJumpDrive(false)
     browncoatCaptain = Browncoat:new(browncoat)
-
+    local sensor = Sensor:new(browncoat)
     -- huge distance away:  players should never find it
     local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(-200 * scale, -100 * scale):setCallSign("APB")
     wave = Wave:new(apb)
@@ -151,6 +151,7 @@ function init()
         captain:assignShip(ship)
         captain:assignTargets(stations)
         captain:setCortex(cortex)
+        captain:setSensor(sensor)
         table.insert(transportCaptains, captain)
     end
     -- rebalance groups
@@ -168,6 +169,7 @@ function init()
         captain:assignShip(escort)
         captain:assignTarget(group)
         captain:setCortex(cortex)
+        captain:setSensor(sensor)
         table.insert(navyCaptains, captain)
         dispatcher:addNavyShip(captain)
     end

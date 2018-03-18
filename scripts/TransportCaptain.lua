@@ -4,6 +4,7 @@ function TransportCaptain:new()
     local o = {
         ship = {},
         cortex = {},
+        sensor = {},
         targets = {},
         current_target = nil,
         ordered = false,
@@ -17,7 +18,6 @@ function TransportCaptain:new()
         surrendered = false,
         isMissionTarget = false,
         SIGHTING_DELAY = 3,
-        SCANNER_RANGE = 10000,
         DOCK_TIMEOUT = 1.0,
         SURRENDER_DAMAGE_THRESHOLD = 0.55,
         RED_ALERT_CANCEL_TIMEOUT = 10
@@ -99,7 +99,7 @@ end
 
 function TransportCaptain:reportIllegalSightings(delta)
     -- TODO: if browncoat is in range, report them to the feds
-    if self:distance(self.cortex.browncoat.ship, self.ship) < self.SCANNER_RANGE then
+    if self:distance(self.cortex.browncoat.ship, self.ship) < self.sensor:getRange() then
         self.cortex:reportSighting(self.cortex.browncoat.ship)
     end
 end
@@ -147,11 +147,11 @@ function TransportCaptain:update(delta)
         -- Passively report illegal activity to the cortex
         self:reportIllegalSightings(delta)
         -- Enemy on the scanner
-        if self.ship:areEnemiesInRange(self.SCANNER_RANGE) then
+        if self.ship:areEnemiesInRange(self.sensor:getEnemyRange()) then
             self.red_alert_timer = 0
             if not self.red_alert then
                 self.red_alert = true
-                self:reportEnemySightings(self.ship:getObjectsInRange(self.SCANNER_RANGE))
+                self:reportEnemySightings(self.ship:getObjectsInRange(self.sensor:getEnemyRange()))
             end
         end
     end
