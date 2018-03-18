@@ -6,7 +6,7 @@ Cortex = {
     REP_ENEMY_THRESHOLD = 200,
     rep_check_timeout = 0,
     rep_timer = 0,
-    REP_CHECK_DELAY = 10,
+    REP_CHECK_DELAY = 1,
     REP_DELAY_BEFORE_INCREASE = 100
 }
 
@@ -28,16 +28,23 @@ function Cortex:update(delta)
       self.browncoat.ship:addReputationPoints(delta * 0.1)
     end
   end
-    -- if self.rep_check_timeout < self.REP_CHECK_DELAY then
-    --     self.rep_check_timeout = self.rep_check_timeout + delta
-    -- else
-    --     self.rep_check_timeout = 0
-    --     if self.browncoat.ship:getReputationPoints() < self.REP_ENEMY_THRESHOLD then
-    --         -- TODO: Set faction Alliance Navy to enemy
-    --     else
-    --         -- TODO: Set faction to friendly
-    --     end
-    -- end
+  if self.rep_check_timeout < self.REP_CHECK_DELAY then
+      self.rep_check_timeout = self.rep_check_timeout + delta
+  else
+    self.rep_check_timeout = 0
+
+    -- Switch factions and account for rep change
+    local newFaction = "Browncoats"
+    if self.browncoat:repEnemy() then
+      newFaction = "Browncoats "
+    end
+
+    if self.browncoat.ship:getFaction() ~= newFaction then
+      local rep = self.browncoat.ship:getReputationPoints()
+      self.browncoat.ship:setFaction(newFaction)
+      self.browncoat.ship:setReputationPoints(rep)
+    end
+  end
 end
 
 function Cortex:reportAttack(ship)
