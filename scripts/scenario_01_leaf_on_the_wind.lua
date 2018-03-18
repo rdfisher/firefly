@@ -180,10 +180,10 @@ function init()
 
 
     local swarm1X, swarm1Y = verse.byName["burnham"]:getPosition()
-    swarm1 = ReaverSwarm:new(scale * -2.5, scale * 5, scale * 5, 30)
+    swarm1 = ReaverSwarm:new(scale * -2.5, scale * 5, scale * 5, 30, "RVA")
 
     local swarm2X, swarm2Y = verse.byName["kalidasa"]:getPosition()
-    swarm2 = ReaverSwarm:new(scale * 27.5, scale * 5, scale * 5, 30)
+    swarm2 = ReaverSwarm:new(scale * 27.5, scale * 5, scale * 5, 30, "RVB")
 end
 
 local balance = 0

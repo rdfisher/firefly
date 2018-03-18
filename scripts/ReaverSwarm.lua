@@ -6,17 +6,21 @@ ReaverSwarm = {
   originY = 0,
   radius = 0,
   size = 1,
-  delays = {}
+  delays = {},
+  callsignStart = "RV",
+  callsignIndex = 1
 }
 
-function ReaverSwarm:new(originX, originY, radius, size)
+function ReaverSwarm:new(originX, originY, radius, size, callsignStart)
   local o = {
     reavers = {},
     originX = originX,
     originY = originY,
     radius = radius,
     size = size,
-    delays = {}
+    delays = {},
+    callsignStart = callsignStart,
+    callsignIndex = 1
   }
   setmetatable(o, self)
   self.__index = self
@@ -44,6 +48,9 @@ function ReaverSwarm:update(delta)
     
     local x, y = self:getDestination()
     local reaver = CpuShip():setTemplate("Phobos T3"):setFaction("Reavers"):setPosition(x0, y0):orderFlyTowards(x, y)
+    local callsign = self.callsignStart .. self.callsignIndex
+    reaver:setCallSign(callsign)
+    self.callsignIndex = self.callsignIndex + 1
     reaver:setWarpDrive(true)
     table.insert(self.reavers, reaver)
     table.insert(self.delays, 0)
