@@ -59,7 +59,8 @@ function Objective:new(objective)
         interval = false,
         time_spent_here = 0,
         updateFunction = function() end,
-        enterFunction = function() end
+        enterFunction = function() end,
+        state = {} -- custom state table
     }
     o.name = objective.name
     if objective.interval ~= nil then
@@ -81,10 +82,10 @@ function Objective:update(captain, delta)
     --     self.timer = self.timer + delta
     -- else
     --     self.timer = 0
-        return self.updateFunction(captain, self.time_spent_here)
+        return self.updateFunction(captain, self.time_spent_here, self.state)
     -- end
 end
 function Objective:enter(captain)
     self.time_spent_here = 0
-    self.enterFunction(captain)
+    self.enterFunction(captain, self.state)
 end

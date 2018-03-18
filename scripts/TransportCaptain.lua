@@ -17,7 +17,7 @@ function TransportCaptain:new()
         surrendered = false,
         isMissionTarget = false,
         SIGHTING_DELAY = 3,
-        SCANNER_RANGE = 30000,
+        SCANNER_RANGE = 10000,
         DOCK_TIMEOUT = 10.0,
         SURRENDER_DAMAGE_THRESHOLD = 0.55,
         RED_ALERT_CANCEL_TIMEOUT = 10

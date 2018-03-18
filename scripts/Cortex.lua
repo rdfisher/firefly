@@ -23,9 +23,9 @@ function Cortex:update(delta)
   if self.rep_timer < self.REP_DELAY_BEFORE_INCREASE then
     self.rep_timer = self.rep_timer + delta
   else
-    -- 1 rep point per second
+    -- 1 rep point per 10 seconds
     if self.browncoat.ship:getReputationPoints() < 1000 then
-      self.browncoat.ship:addReputationPoints(delta)
+      self.browncoat.ship:addReputationPoints(delta * 0.1)
     end
   end
     -- if self.rep_check_timeout < self.REP_CHECK_DELAY then
@@ -76,9 +76,6 @@ function Cortex:reportPiracy(ship)
     self:broadcastAlert(string.format("[APB] Ship %s is under attack! Sector %s", callsign, sector))
     table.insert(self.entries, Bulletin:distressCall(ship, callsign, sector, x, y))
     self.rep_timer = 0
-
-    -- Temporary
-    self.browncoat.ship:setReputationPoints(0)
 end
 
 function Cortex:reportSighting(target)

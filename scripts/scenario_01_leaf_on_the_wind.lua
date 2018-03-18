@@ -3,17 +3,23 @@
 -- Type: Basic
 -- Variation[TwoPlayer]: Two player scenario
 
--- TODO:
--- Last position
--- disperse stations
--- Create merchant fleet of transports
--- Spawn mission types (transport, salvage, data hack)
--- Create Allience Navy fleet
--- Create Reever incursion script
--- Add Ships (Tohoku-class cruiser, Allience Navy Gunships, Firefly, Reever ships?)
--- Create a "follow investigate last position" script
--- Create a search pattern script
--- Implement Cry Baby
+--[[
+Observations:
+Ranges:
+- Tactical: Anything below 5U is role of tactical. Useful missile range is 2-5U.
+Beam range is < 2U.
+
+- Operations: Below 5U is essentially a local contact. Anything above 5U will not
+be seen by other members of the crew except Ops. Ops range is anywhere between 5U
+and 50U, with 50U being max comm range.
+
+50U radius is about 2.5 sectors worth.
+
+Shooting / interacting with a ship requires you to be < 5U, Transfering cargo < 2U
+
+For Alliance > 5U is comms range. < 5U is where aggression happens. and 2U should
+be close enough to immediately destroy a ship.
+]]
 
 require("Verse.lua")
 require("CivilianGroup.lua")
@@ -141,8 +147,9 @@ function init()
     for i,group in ipairs(civilians) do
         local x, y = group:getPosition()
         escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
-        escort:setWarpDrive(true):setJumpDrive(true):setJumpDriveRange(0,10000000)
         escort:setCallSign("IAV" .. i)
+        escort:setWarpDrive(true)
+        --escort:setJumpDrive(true):setJumpDriveRange(0,10000000)
         local captain = AllianceNavyCaptain:new()
         captain:assignShip(escort)
         captain:assignTarget(group)

@@ -5,12 +5,14 @@ AllianceNavyCaptain = {
     ROAM_SCANNER_RANGE = 10000,
     ILLEGAL_REP_THRESHOLD = 300,
     CRIME_SCANNER_DELAY = 10,
-    CRIME_SCANNER_RANGE = 5000,
+    CRIME_SCANNER_RANGE = 10000,
     ARREST_TIMEOUT = 60, -- wait 1 minute for engines to stop
-    MAX_DISTANCE_AWAY_FROM_FLOCK = 5000,
+    MAX_DISTANCE_AWAY_FROM_FLOCK = 30000,
     ARREST_DISTANCE = 5000,
+    BOARD_DISTANCE = 1000,
     SEARCH_DELAY = 120, -- wait 2 minutes to power down weapons
-    MINIMUM_ARREST_SPEED = 10 -- meters/s
+    MINIMUM_ARREST_SPEED = 10, -- meters/s
+    ABANDON_SEARCH_AFTER = 60 -- Search for lost contact for 1 minute
 }
 
 function AllianceNavyCaptain:new()
@@ -231,23 +233,33 @@ function AllianceNavyCaptain:initObjectives()
             captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                 HALT! Hold your position and prepare to be boarded
             ]])
+            local x, y = captain.cortex.browncoat.ship:getPosition()
+            captain.ship:orderFlyTowards(x, y)
         end,
         update = function(captain, delta)
             -- if the ship slows down, approach them
+            -- TODO: What about if they jump?
             if captain:hasBrowncoatStopped() then
                 -- Stop close to them, so we don't crash into
-                if captain:distance(captain.ship, captain.cortex.browncoat.ship) < 1000 then
+                if captain:distance(captain.ship, captain.cortex.browncoat.ship) < captain.BOARD_DISTANCE then
                     captain.ship:orderIdle()
                     return "proceedWithArrest"
                 end
             else
                 if delta > captain.ARREST_TIMEOUT then
+                    captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
+                        You've chosen to run. Prepare to die.
+                    ]])
                     return "attackBrowncoat"
                 end
                 -- If they are running, chase them
-                local x, y = captain.cortex.browncoat.ship:getPosition()
-                captain.ship:orderFlyTowards(x, y)
+                -- local x, y = captain.cortex.browncoat.ship:getPosition()
+                -- captain.ship:orderFlyTowards(x, y)
             end
+            -- TODO: Temporarily moved out of the above conditional. This will
+            -- ensure that if the player runs via Jump drive, we still pursue
+            local x, y = captain.cortex.browncoat.ship:getPosition()
+            captain.ship:orderFlyTowards(x, y)
         end
     }))
     self.plan:add(Objective:new({
@@ -261,11 +273,13 @@ function AllianceNavyCaptain:initObjectives()
             ]])
         end,
         update = function(captain, delta)
+            -- if they move try to arrest them again, invoking the arrest step timeout
             if not captain:hasBrowncoatStopped() then
-                -- try to arrest them again, invoking the arrest step timeout
+                -- TODO: What about if they jump?
                 return "arrest"
             end
             
+            -- submit to search
             if captain:hasPoweredDownWeapons() and captain:hasDroppedShields() then
                 captain.cortex.browncoat:shipSearched(captain)
                 -- TODO: say someting else if arrested with contraband?
@@ -277,6 +291,10 @@ function AllianceNavyCaptain:initObjectives()
 
             -- Wait for some time for weapon powerdown
             if delta > captain.SEARCH_DELAY then
+                captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
+                    You have refused to power down your weapons. We will now
+                    power them down for you.... by force.
+                ]])
                 return "attackBrowncoat"
             end
         end
@@ -284,14 +302,47 @@ function AllianceNavyCaptain:initObjectives()
     self.plan:add(Objective:new({
         name = "attackBrowncoat",
         enter = function(captain)
-            captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
-                You've chosen to run. Prepare to die.
-            ]])
             captain.ship:orderAttack(captain.cortex.browncoat.ship)
         end,
         update = function(captain, delta)
-            if delta > 99999 and captain:distance(captain.ship, captain.cortex.browncoat.ship) > 9999 then
-                return "default"
+            local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
+            if distance > captain.CRIME_SCANNER_RANGE then
+                captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
+                    Contact lost, moving to last known position...
+                ]])
+                return "searchForBrowncoat"
+            end
+        end
+    }))
+    -- Simulate radar range
+    self.plan:add(Objective:new({
+        name = "searchForBrowncoat",
+        enter = function(captain, state)
+            -- Order ship to browncoat's last known position
+            local x, y = captain.cortex.browncoat.ship:getPosition()
+            captain.ship:orderFlyTowardsBlind(x, y)
+            state.lastKnownPosition = {x, y}
+        end,
+        update = function(captain, delta, state)
+            local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
+            if distance < captain.CRIME_SCANNER_RANGE then
+                -- Browncoat is found, resume attack
+                captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
+                    Contact re-established, resuming pursuit...
+                ]])
+                return "attackBrowncoat"
+            end
+
+            -- Give up search, return to normal duty
+            if captain:distance(captain.ship, state.lastKnownPosition.x, state.lastKnownPosition.y) < 1000 then
+                if delta > self.ABANDON_SEARCH_AFTER then
+                    return "default"
+                end
+            else
+                -- Can't get to this position for some reason
+                if delta > 300 then
+                    return "default"
+                end
             end
         end
     }))

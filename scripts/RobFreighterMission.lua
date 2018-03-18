@@ -82,6 +82,7 @@ function RobFreighterMission:update(delta)
       )
     )
     self.targetFreighterCaptain:setIsMissionTarget(true)
+    self.browncoat:setRep(Browncoat.FELLON)
     self.state = self.STATE_FIGHT
     return 
   end
