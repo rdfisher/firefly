@@ -126,16 +126,14 @@ end
 function AllianceNavyCaptain:initObjectives()
     self.plan:add(Objective:new({
         name = "default",
-        enter = function(captain)
-            -- Default behavior Move towards the centre of our flock
-            local x, y = captain.target:getPosition()
-            captain.ship:orderFlyTowards(x, y)
-        end,
         update = function(captain, delta)
             -- Check to see if we should be
             if #captain.bulletins > 0 then
                 return "investigate"
             end
+            -- Default behavior Move towards the centre of our flock
+            local x, y = captain.target:getPosition()
+            captain.ship:orderFlyTowards(x, y)
         end
     }))
     self.plan:add(Objective:new({
