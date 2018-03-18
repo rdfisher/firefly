@@ -6,10 +6,10 @@ AllianceNavyCaptain = {
     ILLEGAL_REP_THRESHOLD = 300,
     CRIME_SCANNER_DELAY = 10,
     CRIME_SCANNER_RANGE = 5000,
-    ARREST_TIMEOUT = 10,
+    ARREST_TIMEOUT = 60, -- wait 1 minute for engines to stop
     MAX_DISTANCE_AWAY_FROM_FLOCK = 5000,
     ARREST_DISTANCE = 5000,
-    SEARCH_DELAY = 10,
+    SEARCH_DELAY = 120, -- wait 2 minutes to power down weapons
     MINIMUM_ARREST_SPEED = 10 -- meters/s
 }
 
@@ -123,6 +123,24 @@ function AllianceNavyCaptain:scanRangeForCriminals(range)
     return objects
 end
 
+function AllianceNavyCaptain:hasBrowncoatStopped()
+    -- Velocity is in meters per second. 100% impulse seems to be around ~100m/s
+    return self.cortex.browncoat.ship:getVelocity() < self.MINIMUM_ARREST_SPEED
+end
+
+function AllianceNavyCaptain:hasPoweredDownWeapons()
+    for _, system in ipairs({"beamweapons", "missilesystem"}) do
+        if self.cortex.browncoat.ship:getSystemPower(system) > 0 then
+            return false
+        end
+    end
+    return true
+end
+
+function AllianceNavyCaptain:hasDroppedShields()
+    return not self.cortex.browncoat.ship:getShieldsActive()
+end
+
 function AllianceNavyCaptain:initObjectives()
     self.plan:add(Objective:new({
         name = "default",
@@ -213,12 +231,10 @@ function AllianceNavyCaptain:initObjectives()
             captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                 HALT! Hold your position and prepare to be boarded
             ]])
-            local x, y = captain.cortex.browncoat.ship:getPosition()
-            captain.ship:orderFlyTowardsBlind(x, y)
         end,
         update = function(captain, delta)
-            -- Velocity is in meters per second. 100% impulse seems to be around ~100m/s
-            if captain.cortex.browncoat:getVelocity() < captain.MINIMUM_ARREST_SPEED then
+            -- if the ship slows down, approach them
+            if captain:hasBrowncoatStopped() then
                 -- Stop close to them, so we don't crash into
                 if captain:distance(captain.ship, captain.cortex.browncoat.ship) < 1000 then
                     captain.ship:orderIdle()
@@ -228,6 +244,9 @@ function AllianceNavyCaptain:initObjectives()
                 if delta > captain.ARREST_TIMEOUT then
                     return "attackBrowncoat"
                 end
+                -- If they are running, chase them
+                local x, y = captain.cortex.browncoat.ship:getPosition()
+                captain.ship:orderFlyTowards(x, y)
             end
         end
     }))
@@ -236,21 +255,29 @@ function AllianceNavyCaptain:initObjectives()
         enter = function(captain)
             captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                 Thankyou for complying. This will go on the official report
+                Power down your weapons, if you move you will be fired upon
+
+                You will now be arrested and thrown in the brig forever.
             ]])
         end,
         update = function(captain, delta)
-            if captain.cortex.browncoat:getVelocity() > captain.MINIMUM_ARREST_SPEED then
-                captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
-                    We told you to keep still. Eat our wrath now!
-                ]])
-                return "attackBrowncoat"
+            if not captain:hasBrowncoatStopped() then
+                -- try to arrest them again, invoking the arrest step timeout
+                return "arrest"
             end
-            if delta > captain.SEARCH_DELAY then
+            
+            if captain:hasPoweredDownWeapons() and captain:hasDroppedShields() then
                 captain.cortex.browncoat:shipSearched(captain)
+                -- TODO: say someting else if arrested with contraband?
                 captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                     Everything seems to be in order. Be on your way.
                 ]])
                 return "default"
+            end
+
+            -- Wait for some time for weapon powerdown
+            if delta > captain.SEARCH_DELAY then
+                return "attackBrowncoat"
             end
         end
     }))
@@ -258,7 +285,7 @@ function AllianceNavyCaptain:initObjectives()
         name = "attackBrowncoat",
         enter = function(captain)
             captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
-                You've chosen to die. Prepare to die.
+                You've chosen to run. Prepare to die.
             ]])
             captain.ship:orderAttack(captain.cortex.browncoat.ship)
         end,
