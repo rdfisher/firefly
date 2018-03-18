@@ -71,6 +71,7 @@ function init()
     playerX, playerY = verse.byName['persephone']:getPosition()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX - 2000, playerY - 2000)
     browncoat:setCallSign("Serenity")
+    browncoat:setWarpDrive(true)
     browncoatCaptain = Browncoat:new(browncoat)
 
     -- huge distance away:  players should never find it
