@@ -19,6 +19,14 @@ Shooting / interacting with a ship requires you to be < 5U, Transfering cargo < 
 
 For Alliance > 5U is comms range. < 5U is where aggression happens. and 2U should
 be close enough to immediately destroy a ship.
+
+Transports:
+After a while they end up heading very ridgdily to their next objectives,
+forming weird straight line convoys. It doesn't look too good, but not sure what
+we can do. It would be nice for them to pick slighly odd paths, or add many more
+stations.
+
+
 ]]
 
 require("Verse.lua")
@@ -71,16 +79,17 @@ function init()
     playerX, playerY = verse.byName['persephone']:getPosition()
     browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX - 2000, playerY - 2000)
     browncoat:setCallSign("Serenity")
-    browncoat:setWarpDrive(true)
+    browncoat:setWarpDrive(false)
+    browncoat:setJumpDrive(false)
     browncoatCaptain = Browncoat:new(browncoat)
 
     -- huge distance away:  players should never find it
     local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(-200 * scale, -100 * scale):setCallSign("APB")
     wave = Wave:new(apb)
-
+    -- Debug APB broadcast, should probably only enable this for the Alliance
+    wave:registerListener(browncoat)
     cortex = Cortex:new(wave, browncoatCaptain)
     dispatcher = AllianceNavyDispatcher:new(cortex)
-    
     
     stations = {
       verse.byName['cortex-relay-7'],
@@ -136,6 +145,7 @@ function init()
     for c=1,40 do
         local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(6.5 * scale, 18.5 * scale), random(0, 10 * scale))
         group:add(ship)
+        ship:setImpulseMaxSpeed(70)
         local captain = TransportCaptain:new()
         captain:assignShip(ship)
         captain:assignTargets(stations)
@@ -149,8 +159,9 @@ function init()
         local x, y = group:getPosition()
         escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
         escort:setCallSign("IAV" .. i)
-        escort:setWarpDrive(true)
+        escort:setWarpDrive(false)
         escort:setJumpDrive(false)
+        escort:setImpulseMaxSpeed(90)
         local captain = AllianceNavyCaptain:new()
         captain:assignShip(escort)
         captain:assignTarget(group)

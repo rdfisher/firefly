@@ -86,7 +86,7 @@ function Cortex:reportPiracy(ship)
 end
 
 function Cortex:reportSighting(target)
-    if target:getReputationPoints() < self.SIGHTING_REP_THRESHOLD then
+    if self.browncoat:repPettyCriminalOrBelow() then
         -- reset timer
         self.rep_timer = 0
         -- add bulletin

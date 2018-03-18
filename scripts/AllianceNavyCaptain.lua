@@ -10,6 +10,7 @@ AllianceNavyCaptain = {
     MAX_DISTANCE_AWAY_FROM_FLOCK = 30000,
     ARREST_DISTANCE = 5000,
     BOARD_DISTANCE = 1000,
+    TACTICAL_RANGE = 5000,
     SEARCH_DELAY = 120, -- wait 2 minutes to power down weapons
     MINIMUM_ARREST_SPEED = 10, -- meters/s
     ABANDON_SEARCH_AFTER = 60 -- Search for lost contact for 1 minute
@@ -70,9 +71,20 @@ function AllianceNavyCaptain:investigate(bulletin)
         end
     end
     table.insert(self.bulletins, bulletin)
-    -- Reset current mission
-    self.mission_progress = "NONE"
-    self.investigation = false
+
+    -- Alliance Navy Cruiser Mission Debug
+    print(string.format("MISSION LIST FOR %s:", self.ship:getCallSign()))
+    for i, v in ipairs(self.bulletins) do
+        print(string.format("BULLETIN: %d, TYPE: %s, TARGET CALLSIGN: %s, SECTOR: %s", i, v.t, v.callsign, v.sector))
+    end
+    print(string.format(
+        "Order received by ship %s, proceeding to sector %s, x:%f, y:%f",
+        self.ship:getCallSign(), self:latestBulletin().sector, self:latestBulletin().x, self:latestBulletin().y
+    ))
+    self.cortex:broadcastAlert(string.format(
+        "[%s] Investigating hostile activity in sector %s",
+        self.ship:getCallSign(), self:latestBulletin().sector
+    ))
 end
 
 function AllianceNavyCaptain:distance(a, b, c, d)
@@ -174,24 +186,11 @@ function AllianceNavyCaptain:initObjectives()
         name = "investigate",
         enter = function(captain)
             -- State machine of (fly-to, roam for X seconds, then clear the bulletin)
-            print(string.format("MISSION LIST FOR %s", captain.ship:getCallSign()))
-            for i, v in ipairs(captain.bulletins) do
-                print(string.format("BULLETIN: %d, TYPE: %s, TARGET CALLSIGN: %s, SECTOR: %s", i, v.t, v.callsign, v.sector))
-            end
-            print(string.format(
-                "Order received by ship %s, proceeding to sector %s, x:%f, y:%f",
-                captain.ship:getCallSign(), captain:latestBulletin().sector, captain:latestBulletin().x, captain:latestBulletin().y
-            ))
-            captain.cortex:broadcastAlert(string.format(
-                "[%s] Investigating hostile activity in sector %s",
-                captain.ship:getCallSign(), captain:latestBulletin().sector
-            ))
-            local x, y = captain:latestBulletin():getPosition()
-            captain.ship:orderFlyTowards(x, y)
         end,
         update = function(captain, delta)
             local x, y = captain:latestBulletin():getPosition()
-            if captain:distance(captain.ship, x, y) < 5000 then
+            captain.ship:orderFlyTowards(x, y)
+            if captain:distance(captain.ship, x, y) < captain.TACTICAL_RANGE then
                 return "roam"
             end
             -- Check if we are too far from out flock
