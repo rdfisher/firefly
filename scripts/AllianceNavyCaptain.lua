@@ -219,7 +219,7 @@ function AllianceNavyCaptain:initObjectives()
             end
 
             -- If any criminals in range, order them to stop and search them
-            if captain.cortex.browncoat.ship:getReputationPoints() < captain.ILLEGAL_REP_THRESHOLD then
+            if captain.cortex.browncoat:repPettyCriminalOrBelow() then
                 local distanceToCriminal = captain:distance(captain.cortex.browncoat.ship, captain.ship)
                 if distanceToCriminal < captain.ARREST_DISTANCE then
                     return "arrest"
@@ -243,11 +243,16 @@ function AllianceNavyCaptain:initObjectives()
             captain.ship:orderFlyTowards(x, y)
         end,
         update = function(captain, delta)
+            local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
+            -- If we have lost them on scanner
+            if distance > captain.ROAM_SCANNER_RANGE then
+                return "searchForSuspect"
+            end
             -- if the ship slows down, approach them
             -- TODO: What about if they jump?
             if captain:hasBrowncoatStopped() then
                 -- Stop close to them, so we don't crash into
-                if captain:distance(captain.ship, captain.cortex.browncoat.ship) < captain.BOARD_DISTANCE then
+                if distance < captain.BOARD_DISTANCE then
                     captain.ship:orderIdle()
                     return "proceedWithArrest"
                 end
@@ -268,6 +273,37 @@ function AllianceNavyCaptain:initObjectives()
             captain.ship:orderFlyTowards(x, y)
         end
     }))
+    -- If target is out of range
+    self.plan:add(Objective:new({
+        name = "searchForSuspect",
+        enter = function(captain, state)
+            -- Order ship to browncoat's last known position
+            local x, y = captain.cortex.browncoat.ship:getPosition()
+            captain.ship:orderFlyTowardsBlind(x, y)
+            state.x = x
+            state.y = y
+        end,
+        update = function(captain, delta, state)
+            local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
+            if distance < captain.CRIME_SCANNER_RANGE then
+                -- Browncoat is found, resume attack
+                captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
+                    Contact re-established, resuming pursuit...
+                ]])
+                return "arrest"
+            end
+
+            -- Give up search, return to normal duty
+            if captain:distance(captain.ship, state.x, state.y) < 1000 then
+                    return "roam"
+            else
+                -- Can't get to this position for some reason
+                if delta > 300 then
+                    return "default"
+                end
+            end
+        end
+    }))
     self.plan:add(Objective:new({
         name = "proceedWithArrest",
         enter = function(captain)
@@ -279,9 +315,8 @@ function AllianceNavyCaptain:initObjectives()
             ]])
         end,
         update = function(captain, delta)
-            -- if they move try to arrest them again, invoking the arrest step timeout
-            if not captain:hasBrowncoatStopped() then
-                -- TODO: What about if they jump?
+            -- if they move or jump try to arrest them again, invoking the arrest step timeout
+            if not captain:hasBrowncoatStopped() or captain:distance(captain.ship, captain.cortex.browncoat.ship) > captain.BOARD_DISTANCE then
                 return "arrest"
             end
             
@@ -327,7 +362,8 @@ function AllianceNavyCaptain:initObjectives()
             -- Order ship to browncoat's last known position
             local x, y = captain.cortex.browncoat.ship:getPosition()
             captain.ship:orderFlyTowardsBlind(x, y)
-            state.lastKnownPosition = {x=x, y=y}
+            state.x = x
+            state.y = y
         end,
         update = function(captain, delta, state)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
@@ -340,7 +376,7 @@ function AllianceNavyCaptain:initObjectives()
             end
 
             -- Give up search, return to normal duty
-            if captain:distance(captain.ship, state.lastKnownPosition.x, state.lastKnownPosition.y) < 1000 then
+            if captain:distance(captain.ship, state.x, state.y) < 1000 then
                 if delta > self.ABANDON_SEARCH_AFTER then
                     return "default"
                 end
