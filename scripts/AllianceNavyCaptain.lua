@@ -207,7 +207,18 @@ function AllianceNavyCaptain:initObjectives()
             captain.ship:orderRoaming()
         end,
         update = function(captain, delta)
-            -- TODO: If any criminals in range, order them to stop and search them
+            -- Prioritise killing enemies (including player enemy faction)
+            if captain.ship:areEnemiesInRange(captain.ROAM_SCANNER_RANGE) then
+                -- Check if we are too far from out flock
+                local x, y = captain.target:getPosition()
+                if captain:distance(captain.ship, x, y) > (captain.target:getRadius() + captain.MAX_DISTANCE_AWAY_FROM_FLOCK) then
+                    return "returnToFlock"
+                end
+                -- Keep roamin' and killin'
+                return
+            end
+
+            -- If any criminals in range, order them to stop and search them
             if captain.cortex.browncoat.ship:getReputationPoints() < captain.ILLEGAL_REP_THRESHOLD then
                 local distanceToCriminal = captain:distance(captain.cortex.browncoat.ship, captain.ship)
                 if distanceToCriminal < captain.ARREST_DISTANCE then
@@ -215,15 +226,10 @@ function AllianceNavyCaptain:initObjectives()
                 end
             end
 
-            if delta > captain.MISSION_ROAM_TIMEOUT and not captain.ship:areEnemiesInRange(captain.ROAM_SCANNER_RANGE) then
+            -- Scanner clear, have we roamed and investigated this point enough?
+            if delta > captain.MISSION_ROAM_TIMEOUT then
                 table.remove(captain.bulletins)
                 return "default"
-            end
-
-            -- Check if we are too far from out flock
-            local x, y = captain.target:getPosition()
-            if captain:distance(captain.ship, x, y) > (captain.target:getRadius() + captain.MAX_DISTANCE_AWAY_FROM_FLOCK) then
-                return "returnToFlock"
             end
         end
     }))
