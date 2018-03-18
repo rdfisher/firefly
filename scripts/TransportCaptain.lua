@@ -117,6 +117,8 @@ function TransportCaptain:setIsMissionTarget(isMissionTarget)
   self.isMissionTarget = isMissionTarget
   if (isMissionTarget) then
     self.ship:setFaction("Independent ")
+    -- Hopefully this is only called once
+    self.cortex:reportPiracy(self.ship)
   else
     self.ship:setFaction("Independent")
   end

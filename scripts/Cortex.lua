@@ -5,7 +5,9 @@ Cortex = {
     SIGHTING_DELAY = 1,
     REP_ENEMY_THRESHOLD = 200,
     rep_check_timeout = 0,
-    REP_CHECK_DELAY = 10
+    rep_timer = 0,
+    REP_CHECK_DELAY = 10,
+    REP_DELAY_BEFORE_INCREASE = 100
 }
 
 function Cortex:new(wave, browncoat)
@@ -18,16 +20,24 @@ function Cortex:new(wave, browncoat)
 end
 
 function Cortex:update(delta)
-    if self.rep_check_timeout < self.REP_CHECK_DELAY then
-        self.rep_check_timeout = self.rep_check_timeout + delta
-    else
-        self.rep_check_timeout = 0
-        if self.browncoat.ship:getReputationPoints() < self.REP_ENEMY_THRESHOLD then
-            -- TODO: Set faction Alliance Navy to enemy
-        else
-            -- TODO: Set faction to friendly
-        end
+  if self.rep_timer < self.REP_DELAY_BEFORE_INCREASE then
+    self.rep_timer = self.rep_timer + delta
+  else
+    -- 1 rep point per second
+    if self.browncoat.ship:getReputationPoints() < 1000 then
+      self.browncoat.ship:addReputationPoints(delta)
     end
+  end
+    -- if self.rep_check_timeout < self.REP_CHECK_DELAY then
+    --     self.rep_check_timeout = self.rep_check_timeout + delta
+    -- else
+    --     self.rep_check_timeout = 0
+    --     if self.browncoat.ship:getReputationPoints() < self.REP_ENEMY_THRESHOLD then
+    --         -- TODO: Set faction Alliance Navy to enemy
+    --     else
+    --         -- TODO: Set faction to friendly
+    --     end
+    -- end
 end
 
 function Cortex:reportAttack(ship)
@@ -55,6 +65,20 @@ function Cortex:illegalActivity(spaceObject)
 
     -- Only used against the player
     self.rep_timer = 0
+end
+
+-- Piracy by browncoat, only used against the player in a mission
+function Cortex:reportPiracy(ship)
+    local x, y = ship:getPosition()
+    local sector = ship:getSectorName()
+    local callsign = ship:getCallSign()
+
+    self:broadcastAlert(string.format("[APB] Ship %s is under attack! Sector %s", callsign, sector))
+    table.insert(self.entries, Bulletin:distressCall(ship, callsign, sector, x, y))
+    self.rep_timer = 0
+
+    -- Temporary
+    self.browncoat.ship:setReputationPoints(0)
 end
 
 function Cortex:reportSighting(target)
