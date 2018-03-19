@@ -20,6 +20,7 @@ end
 function Wave:sameAsLastMessage(message)
   if self.last_message ~= nil then
     if self.last_message.callsign ~= message.callsign and self.last_message.sector ~= message.sector then
+      self.last_message = message
       return false
     end
   end
