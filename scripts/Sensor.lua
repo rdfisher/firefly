@@ -6,6 +6,8 @@ minutes with just running away.
 Only works with passive sensors. If the enemy is roaming, they will find you
 with regular active sensors
 
+- Freighters min range is 5U, Alliance min range is 10U
+
 Table:
 Reactor power =  0% Detection range =  5 U
 Reactor power = 20% Detection range = 10 U
@@ -46,6 +48,12 @@ function Sensor:getRange()
     local range = self.MAX - self.MIN
     local x = reactorPower*25000 + self.MIN
     return x
+end
+
+-- Clamp range of military ships to min 10U
+function Sensor:getMilitaryRange()
+    local range = self:getRange()
+    return math.max(range, 10000)
 end
 
 function Sensor:getEnemyRange()

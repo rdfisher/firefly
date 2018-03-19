@@ -214,7 +214,7 @@ function AllianceNavyCaptain:initObjectives()
         end,
         update = function(captain, delta)
             -- Prioritise killing enemies (including player enemy faction)
-            if captain.ship:areEnemiesInRange(captain.sensor:getRange()) then
+            if captain.ship:areEnemiesInRange(captain.sensor:getMilitaryRange()) then
                 -- Check if we are too far from out flock
                 local x, y = captain.target:getPosition()
                 if captain:distance(captain.ship, x, y) > (captain.target:getRadius() + captain.MAX_DISTANCE_AWAY_FROM_FLOCK) then
@@ -242,16 +242,16 @@ function AllianceNavyCaptain:initObjectives()
     self.plan:add(Objective:new({
         name = "arrest",
         enter = function(captain)
-            captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
-                HALT! Hold your position and prepare to be boarded
-            ]])
+            captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, string.format([[
+                Hold your position and prepare to be boarded. Comply in %d seconds
+            ]]), captain.ARREST_TIMEOUT)
             local x, y = captain.cortex.browncoat.ship:getPosition()
             captain.ship:orderFlyTowards(x, y)
         end,
         update = function(captain, delta)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
             -- If we have lost them on scanner
-            if distance > captain.sensor:getRange() then
+            if distance > captain.sensor:getMilitaryRange() then
                 return "searchForSuspect"
             end
 
@@ -289,7 +289,7 @@ function AllianceNavyCaptain:initObjectives()
         end,
         update = function(captain, delta, state)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
-            if distance < captain.sensor:getRange() then
+            if distance < captain.sensor:getMilitaryRange() then
                 -- Browncoat is found, resume attack
                 captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                     Contact re-established, resuming pursuit...
@@ -311,12 +311,10 @@ function AllianceNavyCaptain:initObjectives()
     self.plan:add(Objective:new({
         name = "proceedWithArrest",
         enter = function(captain)
-            captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
-                Thankyou for complying. This will go on the official report
-                Power down your weapons, if you move you will be fired upon
-
-                You will now be arrested and thrown in the brig forever.
-            ]])
+            captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, string.format([[
+                You have %d seconds to power down weapons and lower shields
+                if you move you will be fired upon
+            ]]), captain.SEARCH_DELAY)
         end,
         update = function(captain, delta)
             -- if they move or jump try to arrest them again, invoking the arrest step timeout
@@ -351,7 +349,7 @@ function AllianceNavyCaptain:initObjectives()
         end,
         update = function(captain, delta)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
-            if distance > captain.sensor:getRange() then
+            if distance > captain.sensor:getMilitaryRange() then
                 captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                     Contact lost, moving to last known position...
                 ]])
@@ -371,7 +369,7 @@ function AllianceNavyCaptain:initObjectives()
         end,
         update = function(captain, delta, state)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
-            if distance < captain.sensor:getRange() then
+            if distance < captain.sensor:getMilitaryRange() then
                 -- Browncoat is found, resume attack
                 captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                     Contact re-established, resuming pursuit...
@@ -397,7 +395,7 @@ function AllianceNavyCaptain:initObjectives()
         name = "default",
         interval = self.CRIME_SCANNER_DELAY,
         update = function(captain)
-            if captain:distance(captain.ship, captain.cortex.browncoat.ship) < captain.sensor:getRange() then
+            if captain:distance(captain.ship, captain.cortex.browncoat.ship) < captain.sensor:getMilitaryRange() then
                 captain.cortex:reportSighting(captain.cortex.browncoat.ship)
             end
         end
@@ -409,7 +407,7 @@ function AllianceNavyCaptain:initObjectives()
             captain.cortex:reportSighting(captain.cortex.browncoat.ship)
         end,
         update = function(captain, delta)
-            if captain:distance(captain.ship, captain.cortex.browncoat.ship) > captain.sensor:getRange() then
+            if captain:distance(captain.ship, captain.cortex.browncoat.ship) > captain.sensor:getMilitaryRange() then
                 return "default"
             end
         end
