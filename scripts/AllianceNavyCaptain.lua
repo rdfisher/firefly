@@ -46,6 +46,10 @@ function AllianceNavyCaptain:setCortex(cortex)
     self.cortex = cortex
 end
 
+function AllianceNavyCaptain:setSensor(sensor)
+    self.sensor = sensor
+end
+
 function AllianceNavyCaptain:isValid()
     return self.ship:isValid()
 end

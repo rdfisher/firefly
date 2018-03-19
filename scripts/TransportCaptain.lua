@@ -40,6 +40,10 @@ function TransportCaptain:setCortex(cortex)
     self.cortex = cortex
 end
 
+function TransportCaptain:setSensor(sensor)
+    self.sensor = sensor
+end
+
 function TransportCaptain:distance(a, b, c, d)
     local x1, y1 = 0, 0
     local x2, y2 = 0, 0
