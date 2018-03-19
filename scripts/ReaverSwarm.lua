@@ -58,7 +58,8 @@ function ReaverSwarm:update(delta)
     local callsign = self.callsignStart .. self.callsignIndex
     reaver:setCallSign(callsign)
     self.callsignIndex = self.callsignIndex + 1
-    reaver:setWarpDrive(true)
+    reaver:setWarpDrive(false)
+    reaver:setShieldsMax(0, 0)
     table.insert(self.reavers, reaver)
     table.insert(self.delays, 0)
   end

@@ -105,7 +105,7 @@ function Browncoat:completeMission(mission, success)
   self:removeMission(mission)
   if success then
     self.missionsCompleted = self.missionsCompleted + 1
-    if self.missionsCompleted > 1 then
+    if self.missionsCompleted > 10 then
       victory(self.ship:getFaction())
     end
   end

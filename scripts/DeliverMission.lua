@@ -69,7 +69,7 @@ function DeliverMission:update(delta)
       )
     )
     self.cortex:illegalActivity(self.originStation)
-    
+    self.browncoat:setRep(Browncoat.PETTY_CRIMINAL)
     self.state = self.STATE_HEADING_TO_DESTINATION
     return
   end

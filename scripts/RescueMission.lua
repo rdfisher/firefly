@@ -59,13 +59,14 @@ function RescueMission:update(delta)
   end
   
   local x, y = self.derelict:getPosition()
-  if (self.state == self.STATE_HEADING_TO_DERELICT) and (distance(self.browncoat.ship, x, y) < 10000) then
+  if (self.state == self.STATE_HEADING_TO_DERELICT) and (distance(self.browncoat.ship, x, y) < 4000) then
     self.derelict:destroy()
     ExplosionEffect():setPosition(x, y):setSize(1000)
     
     local reaver = CpuShip():setTemplate("Phobos T3"):setFaction("Reavers"):setPosition(self.reaverSwarm.originX, self.reaverSwarm.originY):orderAttack(self.browncoat.ship)
     reaver:setCallSign("RVX1")
-    reaver:setWarpDrive(true)
+    reaver:setWarpDrive(false)
+    reaver:setShieldsMax(0, 0)
     self.reaver = reaver    
     
     reaver:sendCommsMessage(
