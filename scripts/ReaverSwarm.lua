@@ -9,7 +9,10 @@ ReaverSwarm = {
   delays = {},
   callsignStart = "RV",
   callsignIndex = 1,
-  borderX = 0
+  borderX = 0,
+  eruptionTime = 600,
+  accumulatedTime = 590,
+  hostility = 3
 }
 
 function ReaverSwarm:new(originX, originY, radius, size, callsignStart)
@@ -77,6 +80,13 @@ function ReaverSwarm:update(delta)
       table.remove(self.delays, i)
     end
   end
+  
+  self.accumulatedTime = self.accumulatedTime + delta
+  
+  if self.accumulatedTime > self.eruptionTime then
+    self.accumulatedTime = 0
+    self:erupt(self.hostility)
+  end
 end
 
 function ReaverSwarm:getDestination()
@@ -84,4 +94,14 @@ function ReaverSwarm:getDestination()
   local x = (math.cos(angle) * self.radius) + self.originX
   local y = (math.sin(angle) * self.radius) + self.originY
   return x, y
+end
+
+function ReaverSwarm:erupt(count)
+  print("REAVER ERUPTION")
+  -- remove 3 reavers from the array, order them to roam
+  for i=1,count do
+    local reaver = table.remove(self.reavers)
+    reaver:orderRoaming()
+    print("ROAMING: " .. reaver:getCallSign())
+  end
 end
