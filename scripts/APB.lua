@@ -5,7 +5,7 @@ APB = {
   homeStation = {},
   reaverSwarms = {},
   cortex = {},
-  accumulatedTime = 0
+  accumulatedTime = 270
 }
 
 function APB:new (browncoat, homeStation, reaverSwarms, cortex)
