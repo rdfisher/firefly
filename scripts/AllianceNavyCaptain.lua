@@ -10,7 +10,7 @@ AllianceNavyCaptain = {
     BOARD_DISTANCE = 1000,
     TACTICAL_RANGE = 5000,
     SEARCH_DELAY = 120, -- wait 2 minutes to power down weapons
-    MINIMUM_ARREST_SPEED = 10, -- meters/s
+    MINIMUM_ARREST_SPEED = 1, -- meters/s
     ABANDON_SEARCH_AFTER = 60 -- Search for lost contact for 1 minute
 }
 
@@ -142,7 +142,11 @@ end
 
 function AllianceNavyCaptain:hasBrowncoatStopped()
     -- Velocity is in meters per second. 100% impulse seems to be around ~100m/s
-    return self.cortex.browncoat.ship:getVelocity() < self.MINIMUM_ARREST_SPEED
+    local vx, vy = self.cortex.browncoat.ship:getVelocity()
+    if math.max(math.abs(vx), math.abs(vy)) < self.MINIMUM_ARREST_SPEED then
+        return true
+    end
+    return false
 end
 
 function AllianceNavyCaptain:hasPoweredDownWeapons()
@@ -250,24 +254,22 @@ function AllianceNavyCaptain:initObjectives()
             if distance > captain.sensor:getRange() then
                 return "searchForSuspect"
             end
+
             -- if the ship slows down, approach them
+            -- Stop close to them, so we don't crash into
+            if distance < captain.BOARD_DISTANCE then
+                captain.ship:orderIdle()
+                return "proceedWithArrest"
+            end
+
             -- TODO: What about if they jump?
-            if captain:hasBrowncoatStopped() then
-                -- Stop close to them, so we don't crash into
-                if distance < captain.BOARD_DISTANCE then
-                    captain.ship:orderIdle()
-                    return "proceedWithArrest"
-                end
-            else
+            if not captain:hasBrowncoatStopped() then
                 if delta > captain.ARREST_TIMEOUT then
                     captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
                         You've chosen to run. Prepare to die.
                     ]])
                     return "attackBrowncoat"
                 end
-                -- If they are running, chase them
-                -- local x, y = captain.cortex.browncoat.ship:getPosition()
-                -- captain.ship:orderFlyTowards(x, y)
             end
             -- TODO: Temporarily moved out of the above conditional. This will
             -- ensure that if the player runs via Jump drive, we still pursue
@@ -297,7 +299,7 @@ function AllianceNavyCaptain:initObjectives()
 
             -- Give up search, return to normal duty
             if captain:distance(captain.ship, state.x, state.y) < 1000 then
-                    return "roam"
+                return "roam"
             else
                 -- Can't get to this position for some reason
                 if delta > 300 then
