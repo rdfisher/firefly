@@ -56,7 +56,7 @@ function Objective:new(objective)
     --TODO: error out if any typos
     local o = {
         timer = 0,
-        interval = false,
+        interval = 1,
         time_spent_here = 0,
         updateFunction = function() end,
         enterFunction = function() end,
