@@ -244,7 +244,7 @@ function AllianceNavyCaptain:initObjectives()
         enter = function(captain)
             captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, string.format([[
                 Hold your position and prepare to be boarded. Comply in %d seconds
-            ]]), captain.ARREST_TIMEOUT)
+            ]], captain.ARREST_TIMEOUT))
             local x, y = captain.cortex.browncoat.ship:getPosition()
             captain.ship:orderFlyTowards(x, y)
         end,
@@ -314,7 +314,7 @@ function AllianceNavyCaptain:initObjectives()
             captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, string.format([[
                 You have %d seconds to power down weapons and lower shields
                 if you move you will be fired upon
-            ]]), captain.SEARCH_DELAY)
+            ]], captain.SEARCH_DELAY))
         end,
         update = function(captain, delta)
             -- if they move or jump try to arrest them again, invoking the arrest step timeout
