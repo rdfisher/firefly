@@ -1,29 +1,39 @@
-TransportCaptain = {}
+--[[
+Transport Captain that flies in a more interesting wiggle, rather than a simple
+straight line between destinations.
+Logic: Given we are going from A to B, Split the route into chunks N long, then
+pick a course at a random angle, that decreases with closer to our destination,
+re-evaluate the course if we reach a chunk, or if we reach a timeout, as we
+might be lost.
+]]
+require("ObjectivePlan.lua")
+
+TransportCaptain = {
+    SIGHTING_DELAY = 3,
+    DOCK_TIMEOUT = 1.0,
+    SURRENDER_DAMAGE_THRESHOLD = 0.55,
+    RED_ALERT_CANCEL_TIMEOUT = 10
+}
 
 function TransportCaptain:new()
     local o = {
+        movement = ObjectivePlan:new(),
+        scanning = ObjectivePlan:new(),
+        redAlert = ObjectivePlan:new(),
         ship = {},
         cortex = {},
         sensor = {},
         targets = {},
         current_target = nil,
         ordered = false,
-        docking = false,
-        docking_time = 0,
         dock_count = 0,
         integrity = 1,
-        red_alert_timer = 0,
-        red_alert = false,
-        sighting_timer = 0,
         surrendered = false,
-        isMissionTarget = false,
-        SIGHTING_DELAY = 3,
-        DOCK_TIMEOUT = 1.0,
-        SURRENDER_DAMAGE_THRESHOLD = 0.55,
-        RED_ALERT_CANCEL_TIMEOUT = 10
+        isMissionTarget = false
     }
     setmetatable(o, self)
     self.__index = self
+    TransportCaptain.initObjectives(o)
     return o
 end
 
@@ -127,104 +137,121 @@ function TransportCaptain:setIsMissionTarget(isMissionTarget)
   end
 end
 
+function TransportCaptain:initObjectives()
+    self.movement:add(Objective:new({
+        name = "default", -- en route
+        enter = function(captain)
+            -- calculate where we are suppose to be heading
+            local x, y = captain.current_target:getPosition()
+            captain.ship:orderFlyTowardsBlind(x, y)
+            captain.ordered = true
+            captain.surrendered = false
+            -- Calculate next step
+        end,
+        update = function(captain, delta)
+            -- Have we reached the end of our step?
+            -- return "default" -- start a new step
+            -- Is target invalid? -- Will probably never happen
+            if not captain.current_target:isValid() then
+                return "newTarget"
+            end
+            -- Are we close enough to dock
+            local d = captain:distance(captain.ship, captain.current_target)
+            if d < 3000 then
+                return "dock"
+            end
+            -- Do we need to surrender?
+            if captain:getIntegrity() <= captain.SURRENDER_DAMAGE_THRESHOLD then
+                print(string.format("Ship %s surrendering, don't shoot", captain.ship:getCallSign()))
+                return "surrender"
+            end
+        end
+    }))
+    self.movement:add(Objective:new({
+        name = "newTarget",
+        update = function(captain, delta)
+            captain:pickNewTarget()
+            return "default"
+        end
+    }))
+    self.movement:add(Objective:new({
+        name = "dock",
+        enter = function(captain)
+            captain.ship:orderDock(captain.current_target)
+        end,
+        update = function(captain, delta)
+            if captain.ship:isDocked(captain.current_target) then
+                captain.dock_count = captain.dock_count + 1
+                return "docked"
+            end
+        end
+    }))
+    self.movement:add(Objective:new({
+        name = "docked",
+        update = function(captain, delta)
+            if delta > captain.DOCK_TIMEOUT then
+                return "newTarget"
+            end
+        end
+    }))
+    self.movement:add(Objective:new({
+        name = "surrender",
+        enter = function(captain)
+            captain.ship:orderIdle()
+            captain.ordered = false
+            captain.surrendered = true
+        end,
+        update = function(captain, delta)
+            -- Have we regained enough health to continue?
+            if captain:getIntegrity() > captain.SURRENDER_DAMAGE_THRESHOLD then
+                return "default"
+                --print(string.format("Ship %s ordered to sector %s", self.ship:getCallSign(), self.current_target:getSectorName()))
+            end
+        end
+    }))
+
+    self.scanning:add(Objective:new({
+        interval = self.SIGHTING_DELAY,
+        update = function(captain, delta)
+            -- Passively report illegal activity to the cortex
+            captain:reportIllegalSightings(delta)
+            -- Enemy on the scanner
+            if captain.ship:areEnemiesInRange(captain.sensor:getEnemyRange()) then
+                captain:reportEnemySightings(captain.ship:getObjectsInRange(captain.sensor:getEnemyRange()))
+            end
+        end
+    }))
+    self.redAlert:add(Objective:new({
+        update = function(captain, delta)
+            -- Check if we have suffered damage
+            -- TODO: Refactor this out
+            if captain:isUnderAttack() then
+                return "redAlert"
+            end
+            -- TODO: Signal attacker for some role play
+        end
+    }))
+    self.redAlert:add(Objective:new({
+        name = "redAlert",
+        enter = function(captain)
+            captain.cortex:reportAttack(captain.ship)
+        end,
+        update = function(captain, delta)
+            if delta > captain.RED_ALERT_CANCEL_TIMEOUT then
+                return "default"
+            end
+        end
+    }))
+end
+
 function TransportCaptain:update(delta)
     if not self.ship:isValid() then
         return
     end
 
-    if self.isMissionTarget then
-      if self:getIntegrity() < self.SURRENDER_DAMAGE_THRESHOLD then
-        self.ship:orderIdle()
-        self.surrendered = true
-      else
-        self.ship:orderRoaming()
-        self.surrendered = false
-      end
-      return
-    end
-
-    -- Scanning delay
-    if self.sighting_timer < self.SIGHTING_DELAY then
-        self.sighting_timer  = self.sighting_timer + delta
-    else
-        self.sighting_timer = 0
-        -- Passively report illegal activity to the cortex
-        self:reportIllegalSightings(delta)
-        -- Enemy on the scanner
-        if self.ship:areEnemiesInRange(self.sensor:getEnemyRange()) then
-            self.red_alert_timer = 0
-            if not self.red_alert then
-                self.red_alert = true
-                self:reportEnemySightings(self.ship:getObjectsInRange(self.sensor:getEnemyRange()))
-            end
-        end
-    end
-
-    -- Check if we have suffered damage
-    if self:isUnderAttack() then
-        self.red_alert_timer = 0
-        if not self.red_alert then
-            self.red_alert = true
-            self.cortex:reportAttack(self.ship) -- TODO: this wont report if enemy already on the scanner
-        end
-    end
-
-    -- Cancel red alert if its been on for 10 seconds (re-sending all bulletins)
-    if self.red_alert then
-        if self.red_alert_timer < self.RED_ALERT_CANCEL_TIMEOUT then
-            self.red_alert_timer = self.red_alert_timer + delta
-        else
-            self.red_alert = false
-        end
-    end
-
-    -- TODO: Stop if attacked and damaged
-    if self.ordered and self.integrity <= self.SURRENDER_DAMAGE_THRESHOLD then
-        self.ship:orderIdle()
-        self.ordered = false
-        print(string.format("Ship %s surrendering, don't shoot", self.ship:getCallSign()))
-    end
-    -- TODO: Signal attacker for some role play
-
-    -- If our target is now invalid, just pick a new one
-    if not self.current_target:isValid() then
-        self.ordered = false
-        self:pickNewTarget()
-        return
-    end
-
-    -- Start with being given an order to fly
-    if not self.ordered and self.integrity > self.SURRENDER_DAMAGE_THRESHOLD then
-        local x, y = self.current_target:getPosition()
-        self.ship:orderFlyTowardsBlind(x, y)
-        self.ordered = true
-        --print(string.format("Ship %s ordered to sector %s", self.ship:getCallSign(), self.current_target:getSectorName()))
-    end
-
-    -- Short circuit. We are not moving
-    if not self.ordered then
-        return
-    end
-
-    -- If we are close to our objective, request dock
-    local d = self:distance(self.ship, self.current_target)
-    if d < 3000 and not self.docking then
-        self.docking = true
-        self.ship:orderDock(self.current_target)
-        self.docking_time = 0
-    end
-
-    -- If we have docked, wait a little bit, and undock
-    if self.docking and self.ship:isDocked(self.current_target) then
-        self.docking_time = self.docking_time + delta
-        -- Undock after 10 seconds
-        if self.docking_time > self.DOCK_TIMEOUT then
-            self.dock_count = self.dock_count + 1
-            self.docking = false
-            self:pickNewTarget()
-            self.ordered = false
-        end
-    end
+    self.movement:update(self, delta)
+    self.scanning:update(self, delta)
+    self.redAlert:update(self, delta)
 end
 
 -- Pick new target that isn't the same as the current one
