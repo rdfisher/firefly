@@ -39,7 +39,7 @@ function ObjectivePlan:update(captain, delta)
     local next = obj:update(captain, delta)
     if next ~= nil then
         self.current = self:getIndexByName(next)
-        print(string.format("Ship %s switching to Objective %s", captain.ship:getCallSign(), self.objectives[self.current].name))
+        -- print(string.format("Ship %s switching to Objective %s", captain.ship:getCallSign(), self.objectives[self.current].name))
         self.objectives[self.current]:enter(captain)
     end
 end
@@ -55,6 +55,7 @@ Objective = {}
 function Objective:new(objective)
     --TODO: error out if any typos
     local o = {
+        name = "default",
         timer = 0,
         interval = 1,
         time_spent_here = 0,
@@ -62,7 +63,9 @@ function Objective:new(objective)
         enterFunction = function() end,
         state = {} -- custom state table
     }
-    o.name = objective.name
+    if objective.name ~= nil then
+        o.name = objective.name
+    end
     if objective.interval ~= nil then
         o.interval = objective.interval
     end

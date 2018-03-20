@@ -76,14 +76,14 @@ function AllianceNavyCaptain:investigate(bulletin)
     table.insert(self.bulletins, bulletin)
 
     -- Alliance Navy Cruiser Mission Debug
-    print(string.format("MISSION LIST FOR %s:", self.ship:getCallSign()))
-    for i, v in ipairs(self.bulletins) do
-        print(string.format("BULLETIN: %d, TYPE: %s, TARGET CALLSIGN: %s, SECTOR: %s", i, v.t, v.callsign, v.sector))
-    end
-    print(string.format(
-        "Order received by ship %s, proceeding to sector %s, x:%f, y:%f",
-        self.ship:getCallSign(), self:latestBulletin().sector, self:latestBulletin().x, self:latestBulletin().y
-    ))
+    -- print(string.format("MISSION LIST FOR %s:", self.ship:getCallSign()))
+    -- for i, v in ipairs(self.bulletins) do
+    --     print(string.format("BULLETIN: %d, TYPE: %s, TARGET CALLSIGN: %s, SECTOR: %s", i, v.t, v.callsign, v.sector))
+    -- end
+    -- print(string.format(
+    --     "Order received by ship %s, proceeding to sector %s, x:%f, y:%f",
+    --     self.ship:getCallSign(), self:latestBulletin().sector, self:latestBulletin().x, self:latestBulletin().y
+    -- ))
     self.cortex:broadcastAlert(string.format(
         "[%s] Investigating hostile activity in sector %s",
         self.ship:getCallSign(), self:latestBulletin().sector
