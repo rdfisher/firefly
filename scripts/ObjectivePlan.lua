@@ -82,6 +82,7 @@ function Objective:update(captain, delta)
         self.timer = self.timer + delta
     else
         self.timer = 0
+        print(string.format("Running update on %s", self.name))
         return self.updateFunction(captain, self.time_spent_here, self.state)
     end
 end

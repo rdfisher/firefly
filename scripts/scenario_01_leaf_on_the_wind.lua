@@ -85,7 +85,7 @@ function init()
     browncoatCaptain = Browncoat:new(browncoat)
     local sensor = Sensor:new(browncoat)
     -- huge distance away:  players should never find it
-    local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(-200 * scale, -100 * scale):setCallSign("APB")
+    local apb = SpaceStation():setTemplate("Medium Station"):setFaction("Alliance Navy"):setPosition(-2 * scale, -1 * scale):setCallSign("APB")
     wave = Wave:new(apb)
     -- Debug APB broadcast, should probably only enable this for the Alliance
     wave:registerListener(browncoat)
@@ -137,13 +137,13 @@ function init()
 
     -- Create civilian groups
     local verseX, verseY = verse:getCentre()
-    for i=1,4 do
+    for i=1,4*4 do
         local group = CivilianGroup:new(verseX, verseY)
         table.insert(civilians, group)
     end
     -- add transports to one group
     local group = civilians[1]
-    for c=1,40 do
+    for c=1,40*4 do
         local ship = CpuShip():setTemplate("Flavia"):setFaction("Independent"):setPosition(random(6.5 * scale, 18.5 * scale), random(0, 10 * scale))
         group:add(ship)
         ship:setImpulseMaxSpeed(70)
@@ -210,35 +210,45 @@ function init()
     cortexApb = APB:new (browncoatCaptain, apb, {swarm1, swarm2}, cortex)
 end
 
+local fps = 0
+local counter = 0
 local balance = 0
 function update(delta)
-    if balance < 10 then
-        balance = balance + delta
-    else
-        balance = 0
-        for i=1,10 do
-            if CivilianGroup:balance(civilians) < 1 then
-                break;
-            end
-        end
-    end
-    cortex:update(delta)
-    dispatcher:update(delta)
-    swarm1:update(delta)
-    swarm2:update(delta)
-    browncoatCaptain:update(delta)
-    badger:update(delta)
-    niska:update(delta)
-    cortexApb:update(delta)
+  if fps < 1 then
+    fps = fps + delta
+    counter = counter + 1
+  else
+    fps = 0
+    wave.sender:setCallSign("APB-"..counter)
+    counter = 0
+  end
+    -- if balance < 10 then
+    --     balance = balance + delta
+    -- else
+    --     balance = 0
+    --     for i=1,10 do
+    --         if CivilianGroup:balance(civilians) < 1 then
+    --             break;
+    --         end
+    --     end
+    -- end
+    -- cortex:update(delta)
+    -- dispatcher:update(delta)
+    -- swarm1:update(delta)
+    -- swarm2:update(delta)
+    -- browncoatCaptain:update(delta)
+    -- badger:update(delta)
+    -- niska:update(delta)
+    -- cortexApb:update(delta)
     
-    -- Update all captains
-    for _, captains in ipairs({navyCaptains, transportCaptains}) do
-        for i, captain in ipairs(captains) do
-            if captain:isValid() then
-                captain:update(delta)
-            else
-                table.remove(captains, i)
-            end
-        end
-    end
+    -- -- Update all captains
+    -- for _, captains in ipairs({navyCaptains, transportCaptains}) do
+    --     for i, captain in ipairs(captains) do
+    --         if captain:isValid() then
+    --             captain:update(delta)
+    --         else
+    --             table.remove(captains, i)
+    --         end
+    --     end
+    -- end
 end
