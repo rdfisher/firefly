@@ -12,7 +12,10 @@ TransportCaptain = {
     SIGHTING_DELAY = 3,
     DOCK_TIMEOUT = 1.0,
     SURRENDER_DAMAGE_THRESHOLD = 0.55,
-    RED_ALERT_CANCEL_TIMEOUT = 10
+    RED_ALERT_CANCEL_TIMEOUT = 10,
+    WIGGLE_STEP_SIZE = 10000,
+    ARRIVAL_DISTANCE = 5000,
+    WIGGLE_DEGREES = 30
 }
 
 function TransportCaptain:new()
@@ -137,20 +140,42 @@ function TransportCaptain:setIsMissionTarget(isMissionTarget)
   end
 end
 
+function TransportCaptain:calculateNextStep()
+    -- if destination is within step distance, go to it
+    local tx, ty = self.current_target:getPosition()
+    if (self:distance(self.ship, self.current_target) < self.WIGGLE_STEP_SIZE * 2) then
+        return tx, ty, false
+    end
+    -- Convert from cartesian to polar
+    local sx, sy = self.ship:getPosition()
+    local angle = math.atan2(ty - sy, tx - sx) + (math.random()-0.5) * math.rad(self.WIGGLE_DEGREES)
+    -- convert from polar to cartiesian
+    local x = self.WIGGLE_STEP_SIZE * math.cos(angle) + sx
+    local y = self.WIGGLE_STEP_SIZE * math.sin(angle) + sy
+    return x, y, true
+end
+
 function TransportCaptain:initObjectives()
     self.movement:add(Objective:new({
         name = "default", -- en route
-        enter = function(captain)
+        enter = function(captain, state)
             -- calculate where we are suppose to be heading
-            local x, y = captain.current_target:getPosition()
+            local x, y, stepping = captain:calculateNextStep()
+            state.x = x
+            state.y = y
+            state.stepping = stepping
             captain.ship:orderFlyTowardsBlind(x, y)
             captain.ordered = true
             captain.surrendered = false
             -- Calculate next step
         end,
-        update = function(captain, delta)
+        update = function(captain, delta, state)
             -- Have we reached the end of our step?
-            -- return "default" -- start a new step
+            if state.stepping then
+                if captain:distance(captain.ship, state.x, state.y) < captain.ARRIVAL_DISTANCE then
+                    return "default" -- start a new step
+                end
+            end
             -- Is target invalid? -- Will probably never happen
             if not captain.current_target:isValid() then
                 return "newTarget"
