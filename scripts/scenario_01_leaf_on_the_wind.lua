@@ -19,12 +19,6 @@ Shooting / interacting with a ship requires you to be < 5U, Transfering cargo < 
 
 For Alliance > 5U is comms range. < 5U is where aggression happens. and 2U should
 be close enough to immediately destroy a ship.
-
-Transports:
-After a while they end up heading very ridgdily to their next objectives,
-forming weird straight line convoys. It doesn't look too good, but not sure what
-we can do. It would be nice for them to pick slighly odd paths, or add many more
-stations.
 ]]
 
 require("Verse.lua")
