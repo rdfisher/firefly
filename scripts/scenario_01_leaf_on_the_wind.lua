@@ -78,7 +78,7 @@ function init()
     verse:generate()
     
     playerX, playerY = verse.byName['persephone']:getPosition()
-    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Atlantis"):setPosition(playerX - 2000, playerY - 2000)
+    browncoat = PlayerSpaceship():setFaction("Browncoats"):setTemplate("Serenity"):setPosition(playerX - 2000, playerY - 2000)
     browncoat:setCallSign("Serenity")
     browncoat:setWarpDrive(false)
     browncoat:setJumpDrive(false)
@@ -159,7 +159,7 @@ function init()
     -- Add Navy escorts
     for i,group in ipairs(civilians) do
         local x, y = group:getPosition()
-        escort = CpuShip():setTemplate("Starhammer II"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
+        escort = CpuShip():setTemplate("Tohoku"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
         escort:setCallSign("IAV" .. i)
         escort:setWarpDrive(false)
         escort:setJumpDrive(false)
