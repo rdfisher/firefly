@@ -6,8 +6,8 @@ AllianceNavyCaptain = {
     CRIME_SCANNER_DELAY = 10,
     ARREST_TIMEOUT = 60, -- wait 1 minute for engines to stop
     MAX_DISTANCE_AWAY_FROM_FLOCK = 30000,
-    ARREST_DISTANCE = 5000,
-    BOARD_DISTANCE = 1000,
+    ARREST_DISTANCE = 10000,
+    BOARD_DISTANCE = 3000,
     TACTICAL_RANGE = 5000,
     SEARCH_DELAY = 120, -- wait 2 minutes to power down weapons
     MINIMUM_ARREST_SPEED = 1, -- meters/s
@@ -245,8 +245,6 @@ function AllianceNavyCaptain:initObjectives()
             captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, string.format([[
                 Hold your position and prepare to be boarded. Comply in %d seconds
             ]], captain.ARREST_TIMEOUT))
-            local x, y = captain.cortex.browncoat.ship:getPosition()
-            captain.ship:orderFlyTowards(x, y)
         end,
         update = function(captain, delta)
             local distance = captain:distance(captain.ship, captain.cortex.browncoat.ship)
@@ -259,22 +257,22 @@ function AllianceNavyCaptain:initObjectives()
             -- Stop close to them, so we don't crash into
             if distance < captain.BOARD_DISTANCE then
                 captain.ship:orderIdle()
-                return "proceedWithArrest"
+                if captain:hasBrowncoatStopped() then
+                    return "proceedWithArrest"
+                end
+            else
+                -- This will ensure that if the player runs via Jump drive,
+                -- we still pursue
+                local x, y = captain.cortex.browncoat.ship:getPosition()
+                captain.ship:orderFlyTowards(x, y)
             end
 
-            -- TODO: What about if they jump?
-            if not captain:hasBrowncoatStopped() then
-                if delta > captain.ARREST_TIMEOUT then
-                    captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
-                        You've chosen to run. Prepare to die.
-                    ]])
-                    return "attackBrowncoat"
-                end
+            if delta > captain.ARREST_TIMEOUT then
+                captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
+                    You've chosen to run. Prepare to die.
+                ]])
+                return "attackBrowncoat"
             end
-            -- TODO: Temporarily moved out of the above conditional. This will
-            -- ensure that if the player runs via Jump drive, we still pursue
-            local x, y = captain.cortex.browncoat.ship:getPosition()
-            captain.ship:orderFlyTowards(x, y)
         end
     }))
     -- If target is out of range
@@ -317,18 +315,25 @@ function AllianceNavyCaptain:initObjectives()
             ]], captain.SEARCH_DELAY))
         end,
         update = function(captain, delta)
-            -- if they move or jump try to arrest them again, invoking the arrest step timeout
-            if not captain:hasBrowncoatStopped() or captain:distance(captain.ship, captain.cortex.browncoat.ship) > captain.BOARD_DISTANCE then
-                return "arrest"
+            -- if they move or jump away, attack them
+            if not captain:hasBrowncoatStopped() or aptain:distance(captain.ship, captain.cortex.browncoat.ship) > captain.BOARD_DISTANCE then
+                return "attackBrowncoat"
             end
             
             -- submit to search
             if captain:hasPoweredDownWeapons() and captain:hasDroppedShields() then
+                -- Pass arrest down to the missions
                 captain.cortex.browncoat:shipSearched(captain)
-                -- TODO: say someting else if arrested with contraband?
-                captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
-                    Everything seems to be in order. Be on your way.
-                ]])
+                if captain.cortex.browncoat:repClean() then
+                    captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
+                        Everything seems to be in order. Be on your way.
+                    ]])
+                else
+                    captain.ship:sendCommsMessage(captain.cortex.browncoat.ship, [[
+                        Your ship is orderd for summary destruction
+                    ]])
+                    return "attackBrowncoat"
+                end
                 return "default"
             end
 
