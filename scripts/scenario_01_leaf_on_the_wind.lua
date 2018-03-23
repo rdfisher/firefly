@@ -151,7 +151,7 @@ function init()
     -- Add Navy escorts
     for i,group in ipairs(civilians) do
         local x, y = group:getPosition()
-        escort = CpuShip():setTemplate("Tohoku"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
+        escort = CpuShip():setTemplate("Gunship"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
         escort:setCallSign("IAV" .. i)
         escort:setWarpDrive(false)
         local captain = AllianceNavyCaptain:new()
@@ -160,8 +160,22 @@ function init()
         captain:setCortex(cortex)
         captain:setSensor(sensor)
         table.insert(navyCaptains, captain)
-        dispatcher:addNavyShip(captain)
+        dispatcher:addGunship(captain)
     end
+
+    -- Configure Tohoku escort
+    local navyGroup = CivilianGroup:new(verseX, verseY)
+    for _, captain in ipairs(navyCaptains) do
+      navyGroup:add(captain.ship)
+    end
+    local x, y = navyGroup:getPosition()
+    local tohoku = CpuShip():setTemplate("Tohoku"):setCallSign("Tohoku"):setFaction("Alliance Navy"):setPosition(x,y):orderIdle()
+    tohokuCaptain = AllianceNavyCaptain:new()
+    tohokuCaptain:assignShip(tohoku)
+    tohokuCaptain:assignTarget(navyGroup)
+    tohokuCaptain:setCortex(cortex)
+    tohokuCaptain:setSensor(sensor)
+    dispatcher:addTohoku(tohokuCaptain)
 
     niska = Niska:new(
       browncoatCaptain,
@@ -230,4 +244,5 @@ function update(delta)
             end
         end
     end
+    tohokuCaptain:update(delta)
 end

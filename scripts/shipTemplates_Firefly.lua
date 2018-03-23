@@ -127,6 +127,21 @@ template:setWeaponStorage("Homing", 4)
 template:setWeaponStorage("EMP", 2)
 template:weaponTubeDisallowMissle(1, "EMP")
 
+-- Alliance Gunship
+template = ShipTemplate():setName("Gunship"):setClass("Frigate", "Cruiser"):setModel("AtlasHeavyFighterYellow")
+template:setDescription([[Alliance Gunship]])
+template:setHull(70)
+template:setShields(50, 40)
+template:setSpeed(90/5.4 * 45, 60, 300)
+template:setBeamWeapon(0, 90, -15, 1200, 8, 6)
+template:setBeamWeapon(1, 90,  15, 1200, 8, 6)
+template:setTubes(2, 60.0)
+template:setWeaponStorage("HVLI", 20)
+template:setWeaponStorage("Homing", 6)
+template:setTubeDirection(0, -1)
+template:setTubeDirection(1,  1)
+
+
 -- Transport Ship
 -- template = ShipTemplate():setName("Flavia"):setClass("Frigate", "Light transport"):setModel("LightCorvetteGrey")
 -- template:setRadarTrace("radar_tug.png")

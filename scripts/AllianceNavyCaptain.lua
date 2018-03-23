@@ -11,13 +11,16 @@ AllianceNavyCaptain = {
     TACTICAL_RANGE = 5000,
     SEARCH_DELAY = 120, -- wait 2 minutes to power down weapons
     MINIMUM_ARREST_SPEED = 1, -- meters/s
-    ABANDON_SEARCH_AFTER = 60 -- Search for lost contact for 1 minute
+    ABANDON_SEARCH_AFTER = 60, -- Search for lost contact for 1 minute
+    UNDER_ATTACK_TIMEOUT = 60
 }
 
 function AllianceNavyCaptain:new()
     local o = {
         plan = ObjectivePlan:new(),
         planPassiveScan = ObjectivePlan:new(),
+        integrityStateMachine = ObjectivePlan:new(),
+        integrity = 1,
         ship = {},
         target = {},
         bulletins = {},
@@ -417,6 +420,40 @@ function AllianceNavyCaptain:initObjectives()
             end
         end
     }))
+    self.integrityStateMachine:add(Objective:new({
+        update = function(captain, delta)
+            -- Check our own integrity, if we are under attack
+            local integrity = captain:getIntegrity()
+            if integrity < captain.integrity then
+                captain.integrity = integrity
+                return "underAttack"
+            end
+            captain.integrity = integrity
+        end
+    }))
+    self.integrityStateMachine:add(Objective:new({
+        name = "underAttack",
+        enter = function(captain)
+            captain.cortex:gunshipUnderAttack(captain.ship)
+        end,
+        update = function(captain, delta)
+            if delta > captain.UNDER_ATTACK_TIMEOUT then
+                return "default"
+            end
+        end
+    }))
+end
+
+function AllianceNavyCaptain:getIntegrity()
+    local hull = self.ship:getHull() / self.ship:getHullMax()
+
+    local shield = 1;
+    for s=0,self.ship:getShieldCount()-1 do
+        shield = math.min(shield, self.ship:getShieldLevel(s) / self.ship:getShieldMax(s))
+    end
+
+    local integrity = (hull + shield) / 2.0
+    return integrity
 end
 
 function AllianceNavyCaptain:update(delta)
@@ -426,4 +463,5 @@ function AllianceNavyCaptain:update(delta)
 
     self.plan:update(self, delta)
     self.planPassiveScan:update(self, delta)
+    self.integrityStateMachine:update(self, delta)
 end

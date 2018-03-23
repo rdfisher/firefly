@@ -85,6 +85,15 @@ function Cortex:reportPiracy(ship)
     self.rep_timer = 0
 end
 
+function Cortex:gunshipUnderAttack(location)
+    local x, y = location:getPosition()
+    local sector = location:getSectorName()
+    local callsign = location:getCallSign()
+    
+    self:broadcastAlert(string.format("[APB] Gunship %s is under attack! Sector %s", callsign, sector))
+    table.insert(self.entries, Bulletin:new("backupRequired", location, callsign, sector, x, y))
+end
+
 function Cortex:reportSighting(target)
     if self.browncoat:repPettyCriminalOrBelow() then
         -- reset timer
