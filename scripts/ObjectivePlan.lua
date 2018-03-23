@@ -18,11 +18,15 @@
 ]]
 
 ObjectivePlan = {}
-function ObjectivePlan:new()
+function ObjectivePlan:new(debug)
     local o = {
         objectives = {},
-        current = nil
+        current = nil,
+        debug = false
     }
+    if debug then
+        o.debug = true
+    end
     setmetatable(o, self)
     self.__index = self
     return o
@@ -39,7 +43,9 @@ function ObjectivePlan:update(captain, delta)
     local next = obj:update(captain, delta)
     if next ~= nil then
         self.current = self:getIndexByName(next)
-        -- print(string.format("Ship %s switching to Objective %s", captain.ship:getCallSign(), self.objectives[self.current].name))
+        if self.debug then
+            print(string.format("switching to state [%s]", self.objectives[self.current].name))
+        end
         self.objectives[self.current]:enter(captain)
     end
 end
