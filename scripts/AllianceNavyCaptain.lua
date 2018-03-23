@@ -316,7 +316,7 @@ function AllianceNavyCaptain:initObjectives()
         end,
         update = function(captain, delta)
             -- if they move or jump away, attack them
-            if not captain:hasBrowncoatStopped() or aptain:distance(captain.ship, captain.cortex.browncoat.ship) > captain.BOARD_DISTANCE then
+            if not captain:hasBrowncoatStopped() or captain:distance(captain.ship, captain.cortex.browncoat.ship) > captain.BOARD_DISTANCE then
                 return "attackBrowncoat"
             end
             
