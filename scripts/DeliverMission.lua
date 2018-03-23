@@ -4,6 +4,7 @@ implicit mission interface:
     update(delta)
     shipSearched(cruiserCaptain)
 ]]
+require("DefenceFleet.lua")
 
 DeliverMission = {
   giverHome = {},
@@ -27,6 +28,7 @@ function DeliverMission:new(giverName, giverHome, originStation, destinationStat
     o.originStation = originStation
     o.destinationStation = destinationStation
     o.cortex = cortex
+    o.fleet = nil
     setmetatable(o, self)
     self.__index = self
     return o
@@ -54,6 +56,9 @@ function DeliverMission:accept(browncoat)
 end
 
 function DeliverMission:update(delta)
+  if self.fleet then
+    self.fleet:update(delta)
+  end
   if self.state == self.STATE_NEW then
     return
   end
@@ -70,6 +75,7 @@ function DeliverMission:update(delta)
     )
     self.cortex:illegalActivity(self.originStation)
     self.browncoat:setRep(Browncoat.PETTY_CRIMINAL)
+    self.fleet = DefenceFleet:new(self.destinationStation, self.browncoat.ship, 6, 2)
     self.state = self.STATE_HEADING_TO_DESTINATION
     return
   end
