@@ -114,7 +114,7 @@ template:setShields(450, 350, 150, 150, 350)
 -- CPU Ships always travel at warp 1
 --template:setWarpDrive(false)
 --template:setWarpSpeed(250/15 * 45) -- Should be about 40U/m
-template:setSpeed(90/5.4 * 45, 60, 100)
+template:setSpeed(90/5.4 * 45, 60, 200)
 template:setJumpDrive(false)
 --                  Arc, Dir, Range, CycleTime, Dmg
 template:setBeam(0, 60, -10, 2000.0, 8.0, 11)
