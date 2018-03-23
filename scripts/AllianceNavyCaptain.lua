@@ -172,7 +172,7 @@ function AllianceNavyCaptain:initObjectives()
             end
             -- Default behavior Move towards the centre of our flock
             local x, y = captain.target:getPosition()
-            captain.ship:orderFlyTowards(x, y)
+            captain.ship:orderDefendLocation(x, y)
         end
     }))
     self.plan:add(Objective:new({
